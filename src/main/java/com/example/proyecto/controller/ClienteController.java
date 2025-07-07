@@ -2,7 +2,9 @@ package com.example.proyecto.controller;
 
 import com.example.proyecto.domain.service.ClienteService;
 import com.example.proyecto.domain.service.ReservaService;
+import com.example.proyecto.domain.service.ServicioService;
 import com.example.proyecto.dto.*;
+import com.example.proyecto.exception.ResourceNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,11 +24,16 @@ public class ClienteController {
 
     private final ClienteService clienteService;
     private final ReservaService reservaService;
+    private final ServicioService servicioService;
 
     @GetMapping("/servicios")
     public ResponseEntity<List<ServicioDTO>> buscarServicios(@Valid FiltroServicioDTO filtros) {
-        List<ServicioDTO> servicios = clienteService.buscarServicios(filtros);
-        return ResponseEntity.ok(servicios);
+        try {
+            List<ServicioDTO> servicios = servicioService.buscarServicios(filtros);
+            return ResponseEntity.ok(servicios);
+        }catch (Exception e) {
+            throw new ResourceNotFoundException(e.getMessage());
+        }
     }
 
 

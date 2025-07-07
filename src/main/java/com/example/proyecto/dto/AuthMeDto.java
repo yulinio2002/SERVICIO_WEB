@@ -7,6 +7,7 @@ import java.util.Set;
 @Data
 public class AuthMeDto {
     private Long id;
+    private Long idCD;
     private String nombre;
     private String email;
     private String telefono;

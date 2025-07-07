@@ -18,7 +18,6 @@ import java.util.List;
 public class ClienteService {
 
     private final ClienteRepository clienteRepository;
-    private final ServicioService servicioService;
     private final ReservaService reservaService;
     private final ReservaRepository reservaRepository;
     private final PagoRepository pagoRepository;
@@ -29,9 +28,6 @@ public class ClienteService {
         return clienteRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado "+ id));
     }
 
-    public List<ServicioDTO> buscarServicios(FiltroServicioDTO filtros) {
-        return servicioService.buscarServicios(filtros);
-    }
 
     public void cancelarReserva(Long clienteId, Long reservaId) {
         reservaService.cancelarReserva(clienteId, reservaId);

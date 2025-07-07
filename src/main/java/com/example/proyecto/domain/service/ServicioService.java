@@ -50,28 +50,51 @@ public class ServicioService {
         Specification<Servicio> spec = (root, query, cb) -> {
             List<jakarta.persistence.criteria.Predicate> preds = new ArrayList<>();
 
-            if (filtros.getCategoria() != null && !filtros.getCategoria().isBlank()) {
-                // Convertir cadena a enum, e.g. "LIMPIEZA"
-                preds.add(cb.equal(
-                        root.get("categoria"),
-                        Categorias.valueOf(filtros.getCategoria())
-                ));
+            // Solo servicios activos
+            preds.add(cb.equal(root.get("activo"), true));
+
+            if (filtros.getCategoria() != null ) {
+                try {
+                    preds.add(cb.equal(
+                            root.get("categoria"),
+                            filtros.getCategoria()
+                    ));
+                } catch (IllegalArgumentException e) {
+                    // Si la categoría no es válida, ignorar este filtro
+                    // o podrías lanzar una excepción personalizada
+                }
             }
-            if (filtros.getDireccion() != null && !filtros.getDireccion().isBlank()) {
-                preds.add(cb.like(
-                        cb.lower(root.get("direccion")),
-                        "%" + filtros.getDireccion().toLowerCase() + "%"
-                ));
-            }
+
+            // NOTA: Removido filtro por dirección ya que Servicio no tiene ese campo
+            // Si necesitas filtrar por dirección, deberías hacerlo por la dirección del proveedor
+            // o agregar un campo dirección a la entidad Servicio
+
             if (filtros.getPrecioMin() != null) {
-                preds.add(cb.ge(root.get("tarifa"), filtros.getPrecioMin()));
+                preds.add(cb.greaterThanOrEqualTo(
+                        root.get("precio"),
+                        BigDecimal.valueOf(filtros.getPrecioMin())
+                ));
             }
+
             if (filtros.getPrecioMax() != null) {
-                preds.add(cb.le(root.get("tarifa"), filtros.getPrecioMax()));
+                preds.add(cb.lessThanOrEqualTo(
+                        root.get("precio"),
+                        BigDecimal.valueOf(filtros.getPrecioMax())
+                ));
             }
+
+            // NOTA: Removido filtro por calificación ya que Servicio no tiene rating propio
+            // El rating está en el Proveedor, no en el Servicio
+            // Si necesitas filtrar por calificación, sería:
+            // preds.add(cb.greaterThanOrEqualTo(root.get("proveedor").get("rating"), filtros.getCalificacionMin()));
+
             if (filtros.getCalificacionMin() != null) {
-                preds.add(cb.ge(root.get("rating"), filtros.getCalificacionMin()));
+                preds.add(cb.greaterThanOrEqualTo(
+                        root.get("proveedor").get("rating"),
+                        BigDecimal.valueOf(filtros.getCalificacionMin())
+                ));
             }
+
             return cb.and(preds.toArray(new Predicate[0]));
         };
 
@@ -79,7 +102,7 @@ public class ServicioService {
         Pageable pageable = PageRequest.of(
                 filtros.getPage(),
                 filtros.getSize(),
-                Sort.by("id").ascending() // o cualquier orden por defecto
+                Sort.by("id").ascending()
         );
 
         // 3. Ejecutar consulta paginada
@@ -87,7 +110,7 @@ public class ServicioService {
 
         // 4. Mapear a DTO y devolver la lista
         return page.getContent().stream()
-                .map(srv -> modelMapper.map(srv, ServicioDTO.class))
+                .map(srv -> toDTO(srv))
                 .collect(Collectors.toList());
     }
 
@@ -131,7 +154,7 @@ public class ServicioService {
        dto.setDescripcion(s.getDescripcion());
        dto.setPrecio(s.getPrecio());
        dto.setActivo(s.isActivo());
-       dto.setCategoria(s.getCategoria().name());
+       dto.setCategoria(s.getCategoria());
        dto.setProveedorId(s.getProveedor().getId());
        return dto;
    }

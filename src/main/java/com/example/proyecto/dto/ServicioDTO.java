@@ -1,5 +1,6 @@
 package com.example.proyecto.dto;
 
+import com.example.proyecto.domain.enums.Categorias;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -11,6 +12,6 @@ public class ServicioDTO {
     private String descripcion;
     private BigDecimal precio;
     private boolean activo;
-    private String categoria;
+    private Categorias categoria;
     private Long proveedorId;
 }

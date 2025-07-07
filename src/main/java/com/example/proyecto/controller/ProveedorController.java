@@ -6,6 +6,7 @@ import com.example.proyecto.domain.service.ProveedorService;
 import com.example.proyecto.domain.service.ReservaService;
 import com.example.proyecto.domain.service.ServicioService;
 import com.example.proyecto.dto.*;
+import com.example.proyecto.exception.ResourceNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -95,10 +96,13 @@ public class ProveedorController {
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/proveedores/{id}")
+    @DeleteMapping("/proveedor/{id}")
     public ResponseEntity<Void> eliminarProveedor(@PathVariable Long id) {
-        proveedorService.eliminarProveedor(id);
-        return ResponseEntity.ok().build();
+        try{proveedorService.eliminarProveedor(id);
+        return ResponseEntity.ok().build();}
+        catch (RuntimeException e){
+            throw new ResourceNotFoundException(e.getMessage());
+        }
     }
 
     @PutMapping("/proveedores/{id}")

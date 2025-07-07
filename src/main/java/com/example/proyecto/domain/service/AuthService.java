@@ -138,6 +138,7 @@ public class AuthService {
             dto.setTelefono(cliente.getTelefono());
             dto.setRole(roles);
             dto.setDescripcion("");
+            dto.setIdCD(cliente.getId());
 
             return dto;
 
@@ -152,6 +153,7 @@ public class AuthService {
             dto.setTelefono(proveedor.getTelefono());
             dto.setRole(roles);
             dto.setDescripcion(proveedor.getDescripcion());
+            dto.setIdCD(proveedor.getId());
             return dto;
         } else {
             throw new UnauthorizedException("Tipo de usuario no válido");

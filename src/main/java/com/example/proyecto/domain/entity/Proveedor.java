@@ -18,12 +18,6 @@ public class Proveedor {
     @Column(nullable = false)
     private String nombre;
 
-//    @Column(nullable = false, unique = true)
-//    private String email;
-
-//    @Column(nullable = false)
-//    private String password;
-
     @Column(length = 2000)
     private String descripcion;
 

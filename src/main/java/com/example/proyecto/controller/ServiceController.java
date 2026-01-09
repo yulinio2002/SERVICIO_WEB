@@ -1,10 +1,7 @@
 package com.example.proyecto.controller;
 
 import com.example.proyecto.domain.enums.Categorias;
-import com.example.proyecto.domain.service.DisponibilidadService;
 import com.example.proyecto.domain.service.ServicioService;
-import com.example.proyecto.dto.DisponibilidadDTO;
-import com.example.proyecto.infrastructure.ServicioRepository;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;

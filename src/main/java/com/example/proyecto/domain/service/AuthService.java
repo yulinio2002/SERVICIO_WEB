@@ -11,7 +11,6 @@ import com.example.proyecto.exception.ConflictException;
 import com.example.proyecto.exception.ResourceNotFoundException;
 import com.example.proyecto.exception.UnauthorizedException;
 import com.example.proyecto.infrastructure.ClienteRepository;
-import com.example.proyecto.infrastructure.ProveedorRepository;
 import com.example.proyecto.infrastructure.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

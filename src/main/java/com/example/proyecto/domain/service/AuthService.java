@@ -1,7 +1,6 @@
 package com.example.proyecto.domain.service;
 
 import com.example.proyecto.config.*;
-import com.example.proyecto.domain.entity.Cliente;
 import com.example.proyecto.domain.entity.Proveedor;
 import com.example.proyecto.domain.entity.User;
 import com.example.proyecto.domain.enums.Role;
@@ -10,7 +9,6 @@ import com.example.proyecto.email.events.WelcomeEmailEvent;
 import com.example.proyecto.exception.ConflictException;
 import com.example.proyecto.exception.ResourceNotFoundException;
 import com.example.proyecto.exception.UnauthorizedException;
-import com.example.proyecto.infrastructure.ClienteRepository;
 import com.example.proyecto.infrastructure.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

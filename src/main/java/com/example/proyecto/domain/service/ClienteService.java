@@ -1,14 +1,11 @@
 package com.example.proyecto.domain.service;
 
-import com.example.proyecto.domain.entity.Cliente;
 import com.example.proyecto.domain.entity.Resena;
 import com.example.proyecto.dto.*;
 import com.example.proyecto.exception.ResourceNotFoundException;
 import com.example.proyecto.infrastructure.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

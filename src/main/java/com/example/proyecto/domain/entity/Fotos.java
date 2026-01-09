@@ -18,4 +18,7 @@ public class Fotos {
     @JoinColumn(name = "servicio_id", nullable = false)
     private Servicios servicio;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "proyectos_id", nullable = false)
+    private Proyectos proyectos;
 }

@@ -1,7 +1,7 @@
 package com.example.proyecto.controller;
 
 import com.example.proyecto.domain.service.ClienteService;
-import com.example.proyecto.domain.service.ServicioService;
+import com.example.proyecto.domain.service.ServiciosService;
 import com.example.proyecto.dto.*;
 import com.example.proyecto.exception.ResourceNotFoundException;
 import jakarta.validation.Valid;
@@ -21,12 +21,12 @@ public class ClienteController {
 
     private final ClienteService clienteService;
     private final ReservaService reservaService;
-    private final ServicioService servicioService;
+    private final ServiciosService serviciosService;
 
     @GetMapping("/servicios")
     public ResponseEntity<List<ServicioDTO>> buscarServicios(@Valid FiltroServicioDTO filtros) {
         try {
-            List<ServicioDTO> servicios = servicioService.buscarServicios(filtros);
+            List<ServicioDTO> servicios = serviciosService.buscarServicios(filtros);
             return ResponseEntity.ok(servicios);
         }catch (Exception e) {
             throw new ResourceNotFoundException(e.getMessage());

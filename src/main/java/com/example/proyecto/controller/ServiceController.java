@@ -1,7 +1,7 @@
 package com.example.proyecto.controller;
 
 import com.example.proyecto.domain.enums.Categorias;
-import com.example.proyecto.domain.service.ServicioService;
+import com.example.proyecto.domain.service.ServiciosService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
@@ -17,7 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ServiceController {
     private final DisponibilidadService disponibilidadService;
-    private final ServicioService servicioService;
+    private final ServiciosService serviciosService;
 
     @GetMapping("/servicios/{id}/horarios")
     public List<DisponibilidadDTO> obtenerHorarioServicio(@PathVariable Long id) {
@@ -26,7 +26,7 @@ public class ServiceController {
 
     @GetMapping("/servicios/categorias")
     public ResponseEntity<List<Categorias>> obtenerCategorias() {
-        return ResponseEntity.ok(servicioService.listarCategorias());
+        return ResponseEntity.ok(serviciosService.listarCategorias());
     }
 
 }

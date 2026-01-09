@@ -22,6 +22,9 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Column(nullable = true)
+    private String address;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
             name = "user_roles",
@@ -31,5 +34,8 @@ public class User {
     @Column(name = "role")
     private Set<Role> roles = new HashSet<>();
 
-    // Getters and setters omitted for brevity
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "persona_id", nullable = false, unique = true)
+    private Persona persona;
+
 }

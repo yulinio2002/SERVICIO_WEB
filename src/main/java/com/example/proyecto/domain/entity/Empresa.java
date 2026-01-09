@@ -2,10 +2,12 @@ package com.example.proyecto.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 @Entity
 @Data
 @Table(name = "empresa")
+@RequiredArgsConstructor
 public class Empresa {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,10 +39,5 @@ public class Empresa {
 
     @Column(nullable = false)
     private String url2;
-
-
-
-
-
 
 }

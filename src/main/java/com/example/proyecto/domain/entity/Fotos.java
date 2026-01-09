@@ -2,10 +2,12 @@ package com.example.proyecto.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 @Entity
 @Data
 @Table(name = "fotos")
+@RequiredArgsConstructor
 public class Fotos {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

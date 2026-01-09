@@ -16,17 +16,5 @@ import java.util.List;
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class ServiceController {
-    private final DisponibilidadService disponibilidadService;
-    private final ServicioService servicioService;
-
-    @GetMapping("/servicios/{id}/horarios")
-    public List<DisponibilidadDTO> obtenerHorarioServicio(@PathVariable Long id) {
-        return disponibilidadService.obtenerHorarioServicio(id);
-    }
-
-    @GetMapping("/servicios/categorias")
-    public ResponseEntity<List<Categorias>> obtenerCategorias() {
-        return ResponseEntity.ok(servicioService.listarCategorias());
-    }
 
 }

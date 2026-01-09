@@ -19,18 +19,6 @@ public class AuthController {
     private final AuthService authService;
     private final JwtTokenProvider tokenProvider;
 
-    @PostMapping("/register/cliente")
-    public ResponseEntity<AuthResponseDto> registerCliente(@Valid @RequestBody ClienteRequestDTO dto) {
-        AuthResponseDto resp = authService.registerCliente(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(resp);
-    }
-
-    @PostMapping("/register/proveedor")
-    public ResponseEntity<AuthResponseDto> registerProveedor(@Valid @RequestBody ProveedorRequestDto dto) {
-        AuthResponseDto resp = authService.registerProveedor(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(resp);
-    }
-
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDto> login(@Valid @RequestBody LoginDTO dto) {
         AuthResponseDto resp = authService.login(dto);

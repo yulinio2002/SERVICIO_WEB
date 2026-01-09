@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -47,15 +48,57 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         // Rutas públicas de autenticación
-                        .requestMatchers("/auth/register/**", "/auth/login").permitAll()
+                        .requestMatchers( "/auth/login").permitAll()
                         // Ruta /auth/me requiere autenticación
                         .requestMatchers("/auth/me").authenticated()
                         // Documentación API
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         // Rutas específicas por rol
-                        .requestMatchers("/api/clientes/**","/api/pagos/**","/api/resenas").hasRole("CLIENTE")
-                        .requestMatchers("/api/proveedores/**").hasRole("PROVEEDOR")
-                        .requestMatchers("/api/servicios/**").hasAnyRole("CLIENTE", "PROVEEDOR")
+                        // Empresas
+                        .requestMatchers(HttpMethod.GET, "/api/empresas/", "/api/empresas/{id}").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/empresas").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/empresas/{id}").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/empresas/{id}").hasRole("ADMIN")
+
+                        // Fotos
+                        .requestMatchers(HttpMethod.GET, "/api/fotos/", "/api/fotos/servicios/{servicioId}","/api/fotos/proyectos/{proyectoId}","/api/fotos/{id}").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/fotos/servicios/{servicioId}","/api/fotos/proyectos/{proyectoId}").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/fotos/{id}").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/fotos/{id}").hasRole("ADMIN")
+
+                        // Marcas
+                        .requestMatchers(HttpMethod.GET, "/api/marcas/", "/api/marcas/{id}").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/marcas").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/marcas/{id}").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/marcas/{id}").hasRole("ADMIN")
+
+                        // Servicios
+                        .requestMatchers(HttpMethod.GET, "/api/servicios", "/api/servicios/", "/api/servicios/{id}", "/api/servicios/top/5").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/servicios").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/servicios/{id}").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/servicios/{id}").hasRole("ADMIN")
+                        .requestMatchers("/api/**").authenticated()
+                        // Productos
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/productos", "/api/productos/",
+                                "/api/productos/{id}",
+                                "/api/productos/top/5"
+                        ).permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/productos").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/productos/{id}").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/productos/{id}").hasRole("ADMIN")
+                        // Proyectos
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/proyectos", "/api/proyectos/",
+                                "/api/proyectos/{id}",
+                                "/api/proyectos/top/5"
+                        ).permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/proyectos").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/proyectos/{id}").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/proyectos/{id}").hasRole("ADMIN")
+
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().denyAll()
                 )

@@ -15,7 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EmpresaController {
     private final EmpresaService empresaService;
-
+    //admin
     // CREATE
     @PostMapping
     public ResponseEntity<Empresa> crearEmpresa(@RequestBody Empresa empresa) {
@@ -34,7 +34,7 @@ public class EmpresaController {
     public ResponseEntity<Empresa> obtenerEmpresa(@PathVariable Long id) {
         return ResponseEntity.ok(empresaService.obtenerEmpresaPorId(id));
     }
-
+    //admin
     // UPDATE (solo campos editables)
     @PutMapping("/{id}")
     public ResponseEntity<Empresa> actualizarEmpresa(
@@ -44,7 +44,7 @@ public class EmpresaController {
         Empresa actualizada = empresaService.actualizarEmpresa(id, empresaActualizada);
         return ResponseEntity.ok(actualizada);
     }
-
+    //admin
     // DELETE
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarEmpresa(@PathVariable Long id) {

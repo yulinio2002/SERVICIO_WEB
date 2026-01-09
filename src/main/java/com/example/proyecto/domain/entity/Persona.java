@@ -6,18 +6,18 @@ import lombok.RequiredArgsConstructor;
 
 @Data
 @Entity
-@Table(name = "person")
+@Table(name = "persona")
 @RequiredArgsConstructor
-public class Person {
+public class Persona {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
-    private String name;
+    private String nombre;
 
     @Column(nullable = false)
-    private String lastname;
+    private String apellido;
 
     @Column(nullable = false)
     private String telefono;

@@ -36,6 +36,6 @@ public class User {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "persona_id", nullable = false, unique = true)
-    private Person person;
+    private Persona persona;
 
 }

@@ -29,6 +29,10 @@ public class ServiciosService {
         return serviciosRepository.findAll();
     }
 
+    public List<Servicios> top5ByIdDesc() {
+        return serviciosRepository.findTop5ByOrderByIdDesc();
+    }
+
     public Servicios update(Long id, Servicios request) {
         validateId(id);
         validateRequest(request);
@@ -40,7 +44,6 @@ public class ServiciosService {
         existing.setImagenUrl(request.getImagenUrl());
         existing.setDescripcion(request.getDescripcion());
 
-        // Recomendación: manejar fotos con endpoints/servicio propio, no en el update del servicio.
         return serviciosRepository.save(existing);
     }
 

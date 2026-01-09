@@ -29,6 +29,10 @@ public class ProyectosService {
         return proyectosRepository.findAll();
     }
 
+    public List<Proyectos> top5ByIdDesc() {
+        return proyectosRepository.findTop5ByOrderByIdDesc();
+    }
+
     public Proyectos update(Long id, Proyectos request) {
         validateId(id);
         validateRequest(request);
@@ -39,6 +43,7 @@ public class ProyectosService {
         existing.setNombre(request.getNombre());
         existing.setImg_url(request.getImg_url());
         existing.setDescripcion(request.getDescripcion());
+
         return proyectosRepository.save(existing);
     }
 

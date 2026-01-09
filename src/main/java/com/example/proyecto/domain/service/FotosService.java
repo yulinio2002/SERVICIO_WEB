@@ -26,9 +26,7 @@ public class FotosService {
         boolean hasServicio = request.getServicio() != null && request.getServicio().getId() != null;
         boolean hasProyecto = request.getProyectos() != null && request.getProyectos().getId() != null;
 
-        // Regla de negocio: Foto pertenece a Servicio O a Proyecto, pero no ambos.
         if (hasServicio == hasProyecto) {
-            // true/true o false/false
             throw new IllegalArgumentException("La foto debe pertenecer a un Servicio o a un Proyecto (solo uno).");
         }
 
@@ -40,7 +38,7 @@ public class FotosService {
                     .orElseThrow(() -> new ResourceNotFoundException("Servicio no encontrado con id: " + servicioId));
 
             request.setServicio(servicio);
-            request.setProyectos(null); // fuerza la regla
+            request.setProyectos(null);
         } else {
             Long proyectoId = request.getProyectos().getId();
             validateId(proyectoId);
@@ -49,7 +47,7 @@ public class FotosService {
                     .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado con id: " + proyectoId));
 
             request.setProyectos(proyecto);
-            request.setServicio(null); // fuerza la regla
+            request.setServicio(null);
         }
 
         return fotosRepository.save(request);
@@ -65,6 +63,27 @@ public class FotosService {
         return fotosRepository.findAll();
     }
 
+    public List<Fotos> getByServicio(Long servicioId) {
+        validateId(servicioId);
+
+        // Validar que exista el servicio (opcional pero recomendado)
+        if (!serviciosRepository.existsById(servicioId)) {
+            throw new ResourceNotFoundException("Servicio no encontrado con id: " + servicioId);
+        }
+
+        return fotosRepository.findByServicio_IdOrderByIdDesc(servicioId);
+    }
+
+    public List<Fotos> getByProyecto(Long proyectoId) {
+        validateId(proyectoId);
+
+        if (!proyectosRepository.existsById(proyectoId)) {
+            throw new ResourceNotFoundException("Proyecto no encontrado con id: " + proyectoId);
+        }
+
+        return fotosRepository.findByProyectos_IdOrderByIdDesc(proyectoId);
+    }
+
     public Fotos update(Long id, Fotos request) {
         validateId(id);
         validateRequestForUpdate(request);
@@ -74,7 +93,6 @@ public class FotosService {
 
         existing.setImagenUrl(request.getImagenUrl());
 
-        // Si en update NO mandan servicio ni proyecto, se mantiene lo que ya tenía.
         boolean wantsServicio = request.getServicio() != null && request.getServicio().getId() != null;
         boolean wantsProyecto = request.getProyectos() != null && request.getProyectos().getId() != null;
 

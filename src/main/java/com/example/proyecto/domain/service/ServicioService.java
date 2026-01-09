@@ -31,11 +31,11 @@ public class ServicioService {
     private final ServicioRepository servicioRepository;
     private final ModelMapper modelMapper;
 
-    public Servicio findById(Long id) {
+    public Servicios findById(Long id) {
         return servicioRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Servicio "+ id));
     }
     public void actualizarServicio(Long servicioId, ServicioRequestDto dto) {
-        Servicio existing = servicioRepository.findById(servicioId)
+        Servicios existing = servicioRepository.findById(servicioId)
                 .orElseThrow(() -> new ResourceNotFoundException("Servicio no encontrado: " + servicioId));
         existing.setNombre(dto.getNombre());
         existing.setDescripcion(dto.getDescripcion());
@@ -47,7 +47,7 @@ public class ServicioService {
 
     public List<ServicioDTO> buscarServicios(FiltroServicioDTO filtros) {
         // 1. Construir Specification dinámico
-        Specification<Servicio> spec = (root, query, cb) -> {
+        Specification<Servicios> spec = (root, query, cb) -> {
             List<jakarta.persistence.criteria.Predicate> preds = new ArrayList<>();
 
             // Solo servicios activos
@@ -106,7 +106,7 @@ public class ServicioService {
         );
 
         // 3. Ejecutar consulta paginada
-        Page<Servicio> page = servicioRepository.findAll(spec, pageable);
+        Page<Servicios> page = servicioRepository.findAll(spec, pageable);
 
         // 4. Mapear a DTO y devolver la lista
         return page.getContent().stream()
@@ -130,7 +130,7 @@ public class ServicioService {
 
     //Cambiar estado de un servicio
     public ServicioDTO cambiarEstado(Long servicioId, boolean activo) {
-        Servicio srv = servicioRepository.findById(servicioId)
+        Servicios srv = servicioRepository.findById(servicioId)
                 .orElseThrow(() -> new IllegalArgumentException("Servicio no encontrado"));
         srv.setActivo(activo);
         return toDTO(servicioRepository.save(srv));
@@ -147,7 +147,7 @@ public class ServicioService {
     public List<Categorias> listarCategorias() {
         return Categorias.listarCategorias();
     }
-   private ServicioDTO toDTO(Servicio s) {
+   private ServicioDTO toDTO(Servicios s) {
        ServicioDTO dto = new ServicioDTO();
        dto.setId(s.getId());
        dto.setNombre(s.getNombre());

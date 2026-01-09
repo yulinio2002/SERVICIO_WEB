@@ -5,15 +5,17 @@ import lombok.Data;
 
 @Entity
 @Data
-@Table(name = "marcas")
-public class Marcas {
+@Table(name = "fotos")
+public class Fotos {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
-    private String nombre;
-
-    @Column(nullable = false)
     private String imagenUrl;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "servicio_id", nullable = false)
+    private Servicios servicio;
+
 }

@@ -23,7 +23,7 @@ public class Productos {
     @Column(nullable = false)
     private String img_url;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 1000)
     private String descripcion;
 
     @Column(nullable = false)

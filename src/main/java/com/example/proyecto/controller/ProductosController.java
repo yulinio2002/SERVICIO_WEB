@@ -1,6 +1,7 @@
 package com.example.proyecto.controller;
 
 import com.example.proyecto.domain.entity.Productos;
+import com.example.proyecto.domain.enums.Categorias;
 import com.example.proyecto.domain.service.ProductosService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -34,7 +35,7 @@ public class ProductosController {
      */
     @GetMapping
     public ResponseEntity<List<Productos>> list(
-            @RequestParam(required = false) String categoria,
+            @RequestParam(required = false) Categorias categoria,
             @RequestParam(required = false) String marca,
             @RequestParam(required = false) String orden
     ) {

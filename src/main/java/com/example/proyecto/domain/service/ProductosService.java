@@ -1,6 +1,7 @@
 package com.example.proyecto.domain.service;
 
 import com.example.proyecto.domain.entity.Productos;
+import com.example.proyecto.domain.enums.Categorias;
 import com.example.proyecto.exception.ConflictException;
 import com.example.proyecto.exception.ResourceNotFoundException;
 import com.example.proyecto.infrastructure.ProductosRepository;
@@ -44,8 +45,8 @@ public class ProductosService {
      *
      * Regla: si mandan categoria y marca a la vez => error (evita ambigüedad).
      */
-    public List<Productos> list(String categoria, String marca, String orden) {
-        String c = trimToNull(categoria);
+    public List<Productos> list(Categorias categoria, String marca, String orden) {
+        Categorias c = categoria;
         String m = trimToNull(marca);
         String o = trimToNull(orden);
 
@@ -54,7 +55,7 @@ public class ProductosService {
         }
 
         if (c != null) {
-            return productosRepository.findByCategoriasIgnoreCaseOrderByNombreAsc(c);
+            return productosRepository.findByCategoriasOrderByNombreAsc(c);
         }
 
         if (m != null) {

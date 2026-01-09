@@ -1,11 +1,13 @@
 package com.example.proyecto.infrastructure;
 
 import com.example.proyecto.domain.entity.Productos;
+import com.example.proyecto.domain.enums.Categorias;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-
+@Repository
 public interface ProductosRepository extends JpaRepository <Productos, Long> {
     boolean existsByNombreIgnoreCase(String nombre);
     boolean existsByNombreIgnoreCaseAndIdNot(String nombre, Long id);
@@ -15,7 +17,7 @@ public interface ProductosRepository extends JpaRepository <Productos, Long> {
     List<Productos> findTop5ByOrderByIdDesc();
 
     // Filtrar + ordenar por nombre
-    List<Productos> findByCategoriasIgnoreCaseOrderByNombreAsc(String categorias);
+    List<Productos> findByCategoriasOrderByNombreAsc(Categorias categorias);
 
     List<Productos> findByMarcaIgnoreCaseOrderByNombreAsc(String marca);
 

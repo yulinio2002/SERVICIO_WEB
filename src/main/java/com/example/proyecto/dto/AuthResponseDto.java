@@ -1,8 +1,7 @@
 package com.example.proyecto.dto;
 
 import com.example.proyecto.domain.entity.User;
-import lombok.Data;
-//@Data
+
 public class AuthResponseDto {
 //    private String token;
 //    public AuthResponseDto() {}
@@ -11,6 +10,9 @@ public class AuthResponseDto {
 //    public void setToken(String token) { this.token = token; }
     private String token;
     private Long id;
+
+
+
 
     public AuthResponseDto() {}
 

@@ -45,7 +45,7 @@ public class AuthService {
         //return new AuthResponseDto(token);
         User user = userRepository.findByEmail(dto.getEmail())
                 .orElseThrow(() -> new UnauthorizedException("Correo no registrado"));
-        return new AuthResponseDto();
+        return new AuthResponseDto(token,user.getId());
     }
 
     @Transactional
@@ -56,6 +56,11 @@ public class AuthService {
         Set<String> roles = user.getRoles().stream()
                 .map(Role::name)
                 .collect(Collectors.toSet());
-        return new AuthMeDto();
+        return new AuthMeDto(
+                user.getId(),
+                user.getEmail(),
+                roles
+
+        );
     }
 }

@@ -1,11 +1,16 @@
 package com.example.proyecto.domain.entity;
-import com.example.proyecto.domain.entity.Fotos;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
-
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id"
+)
 @Data
 @Entity
 @Table(name="proyectos")
@@ -25,6 +30,7 @@ public class Proyectos {
     private String descripcion;
 
     @OneToMany(mappedBy = "proyectos", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference("proyecto-fotos")
     private List<Fotos> fotos;
 
 }

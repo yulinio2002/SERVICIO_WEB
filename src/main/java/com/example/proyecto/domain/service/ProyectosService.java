@@ -3,11 +3,16 @@ package com.example.proyecto.domain.service;
 import com.example.proyecto.domain.entity.Proyectos;
 import com.example.proyecto.exception.ResourceNotFoundException;
 import com.example.proyecto.infrastructure.ProyectosRepository;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id"
+)
 @Service
 @RequiredArgsConstructor
 public class ProyectosService {

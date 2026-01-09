@@ -3,5 +3,24 @@ package com.example.proyecto.infrastructure;
 import com.example.proyecto.domain.entity.Productos;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+import java.util.Optional;
+
 public interface ProductosRepository extends JpaRepository <Productos, Long> {
+    boolean existsByNombreIgnoreCase(String nombre);
+    boolean existsByNombreIgnoreCaseAndIdNot(String nombre, Long id);
+    Optional<Productos> findByNombreIgnoreCase(String nombre);
+
+    // Top 5 por ID (desc)
+    List<Productos> findTop5ByOrderByIdDesc();
+
+    // Filtrar + ordenar por nombre
+    List<Productos> findByCategoriasIgnoreCaseOrderByNombreAsc(String categorias);
+
+    List<Productos> findByMarcaIgnoreCaseOrderByNombreAsc(String marca);
+
+    // Ordenar TODOS
+    List<Productos> findAllByOrderByCategoriasAscNombreAsc();
+
+    List<Productos> findAllByOrderByMarcaAscNombreAsc();
 }

@@ -81,6 +81,9 @@ public class SecurityConfig {
                                 "/api/fotos/servicios/*", "/api/fotos/proyectos/*"
                         ).hasRole("ADMIN")
 
+                        // Enviar correo
+                        .requestMatchers(HttpMethod.POST, "/api/contacto"). permitAll()
+
                         // /auth/me requiere auth
                         .requestMatchers("/auth/me").authenticated()
 

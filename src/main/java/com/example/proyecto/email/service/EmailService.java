@@ -1,5 +1,6 @@
 package com.example.proyecto.email.service;
 
+import com.example.proyecto.dto.ContactoRequestDTO;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,8 @@ public class EmailService {
         message.setText(text);
         javaMailSender.send(message);
     }
+
+
 
     @Async
     public void sendHtmlEmail(String to, String subject, Map<String,Object> variables) {

@@ -80,12 +80,19 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST,
                                 "/api/fotos/servicios/*", "/api/fotos/proyectos/*"
                         ).hasRole("ADMIN")
+                        //registro
+                        .requestMatchers(HttpMethod.POST, "/auth/register").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.PUT, "/auth/*").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "/auth").permitAll()
 
                         // Enviar correo
                         .requestMatchers(HttpMethod.POST, "/api/contacto"). permitAll()
 
                         // /auth/me requiere auth
                         .requestMatchers("/auth/me").authenticated()
+
 
                         // TODO lo demás bajo /api requiere auth
                         .requestMatchers("/api/**").authenticated()

@@ -1,6 +1,7 @@
 package com.example.proyecto.domain.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
@@ -17,5 +18,5 @@ public class Marcas {
     private String nombre;
 
     @Column(nullable = false)
-    private String imagenUrl;
+    private String imagenUrl = "";
 }

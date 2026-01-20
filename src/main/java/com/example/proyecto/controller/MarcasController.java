@@ -2,6 +2,7 @@ package com.example.proyecto.controller;
 
 import com.example.proyecto.domain.entity.Marcas;
 import com.example.proyecto.domain.service.MarcasService;
+import com.example.proyecto.dto.MarcaResponseDto;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,7 +26,7 @@ public class MarcasController {
 
     // READ ALL
     @GetMapping
-    public ResponseEntity<List<Marcas>> listar() {
+    public ResponseEntity<List<MarcaResponseDto>> listar() {
         return ResponseEntity.ok(marcasService.listar());
     }
 

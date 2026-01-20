@@ -1,6 +1,7 @@
 package com.example.proyecto.controller;
 
-import com.example.proyecto.domain.entity.Productos;
+import com.example.proyecto.dto.ProductoRequestDto;
+import com.example.proyecto.dto.ProductoResponseDto;
 import com.example.proyecto.domain.enums.Categorias;
 import com.example.proyecto.domain.service.ProductosService;
 import lombok.RequiredArgsConstructor;
@@ -18,37 +19,25 @@ public class ProductosController {
     private final ProductosService productosService;
 
     @PostMapping
-    public ResponseEntity<Productos> create(@RequestBody Productos request) {
+    public ResponseEntity<ProductoResponseDto> create(@RequestBody ProductoRequestDto request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(productosService.create(request));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Productos> getById(@PathVariable Long id) {
+    public ResponseEntity<ProductoResponseDto> getById(@PathVariable Long id) {
         return ResponseEntity.ok(productosService.getById(id));
     }
 
-    /**
-     * GET /api/productos
-     * - ?categoria=...
-     * - ?marca=...
-     * - ?orden=categoria|marca
-     */
     @GetMapping
-    public ResponseEntity<List<Productos>> list(
+    public ResponseEntity<List<ProductoResponseDto>> list(
             @RequestParam(required = false) Categorias categoria,
-            @RequestParam(required = false) String marca,
-            @RequestParam(required = false) String orden
+            @RequestParam(required = false) String marca
     ) {
-        return ResponseEntity.ok(productosService.list(categoria, marca, orden));
-    }
-
-    @GetMapping("/top/5")
-    public ResponseEntity<List<Productos>> top5() {
-        return ResponseEntity.ok(productosService.top5ByIdDesc());
+        return ResponseEntity.ok(productosService.list(categoria, marca));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Productos> update(@PathVariable Long id, @RequestBody Productos request) {
+    public ResponseEntity<ProductoResponseDto> update(@PathVariable Long id, @RequestBody ProductoRequestDto request) {
         return ResponseEntity.ok(productosService.update(id, request));
     }
 

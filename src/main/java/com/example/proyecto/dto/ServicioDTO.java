@@ -1,6 +1,5 @@
 package com.example.proyecto.dto;
 
-import com.example.proyecto.domain.enums.Categorias;
 import lombok.Data;
 
 import java.math.BigDecimal;

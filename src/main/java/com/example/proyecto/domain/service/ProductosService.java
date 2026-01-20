@@ -1,5 +1,7 @@
 package com.example.proyecto.domain.service;
 
+import com.example.proyecto.dto.ProductoRequestDto;
+import com.example.proyecto.dto.ProductoResponseDto;
 import com.example.proyecto.domain.entity.Productos;
 import com.example.proyecto.domain.enums.Categorias;
 import com.example.proyecto.exception.ConflictException;
@@ -8,7 +10,10 @@ import com.example.proyecto.infrastructure.ProductosRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -16,72 +21,44 @@ public class ProductosService {
 
     private final ProductosRepository productosRepository;
 
-    public Productos create(Productos request) {
+    public ProductoResponseDto create(ProductoRequestDto request) {
         validateRequest(request);
 
         if (productosRepository.existsByNombreIgnoreCase(request.getNombre())) {
             throw new ConflictException("Ya existe un producto con el nombre: " + request.getNombre());
         }
 
-        return productosRepository.save(request);
+        Productos p = new Productos();
+        applyRequestToEntity(p, request);
+
+        Productos saved = productosRepository.save(p);
+        return toResponse(saved);
     }
 
-    public Productos getById(Long id) {
-        validateId(id);
-        return productosRepository.findById(id)
+    public ProductoResponseDto getById(Long id) {
+        Productos p = productosRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con id: " + id));
+        return toResponse(p);
     }
 
-    public List<Productos> getAll() {
-        return productosRepository.findAll();
-    }
-
-    /**
-     * Lista avanzada:
-     * - Si categoria != null -> filtra por categoria y ordena por nombre
-     * - Si marca != null -> filtra por marca y ordena por nombre
-     * - Si orden != null -> ordena todos por categoria o marca
-     * - Si todo null -> devuelve todo (equivalente a getAll)
-     *
-     * Regla: si mandan categoria y marca a la vez => error (evita ambigüedad).
-     */
-    public List<Productos> list(Categorias categoria, String marca, String orden) {
-        Categorias c = categoria;
-        String m = trimToNull(marca);
-        String o = trimToNull(orden);
-
-        if (c != null && m != null) {
+    public List<ProductoResponseDto> list(Categorias categoria, String marca) {
+        if (categoria != null && marca != null && !marca.trim().isEmpty()) {
             throw new IllegalArgumentException("No puedes filtrar por categoria y marca al mismo tiempo.");
         }
 
-        if (c != null) {
-            return productosRepository.findByCategoriasOrderByNombreAsc(c);
+        List<Productos> list;
+        if (categoria != null) {
+            list = productosRepository.findByCategoriasOrderByNombreAsc(categoria);
+        } else if (marca != null && !marca.trim().isEmpty()) {
+            list = productosRepository.findByMarcaIgnoreCaseOrderByNombreAsc(marca.trim());
+        } else {
+            list = productosRepository.findAll();
         }
 
-        if (m != null) {
-            return productosRepository.findByMarcaIgnoreCaseOrderByNombreAsc(m);
-        }
-
-        if (o != null) {
-            String ord = o.toLowerCase();
-            if (ord.equals("categoria")) {
-                return productosRepository.findAllByOrderByCategoriasAscNombreAsc();
-            }
-            if (ord.equals("marca")) {
-                return productosRepository.findAllByOrderByMarcaAscNombreAsc();
-            }
-            throw new IllegalArgumentException("Parámetro 'orden' inválido. Usa: categoria | marca");
-        }
-
-        return productosRepository.findAll();
+        return list.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
-    public List<Productos> top5ByIdDesc() {
-        return productosRepository.findTop5ByOrderByIdDesc();
-    }
-
-    public Productos update(Long id, Productos request) {
-        validateId(id);
+    public ProductoResponseDto update(Long id, ProductoRequestDto request) {
         validateRequest(request);
 
         Productos existing = productosRepository.findById(id)
@@ -91,59 +68,83 @@ public class ProductosService {
             throw new ConflictException("Ya existe otro producto con el nombre: " + request.getNombre());
         }
 
-        existing.setNombre(request.getNombre());
-        existing.setImg_url(request.getImg_url());
-        existing.setDescripcion(request.getDescripcion());
-        existing.setMarca(request.getMarca());
-        existing.setCategorias(request.getCategorias());
-
-        return productosRepository.save(existing);
+        applyRequestToEntity(existing, request);
+        Productos saved = productosRepository.save(existing);
+        return toResponse(saved);
     }
 
     public void delete(Long id) {
-        validateId(id);
-
         if (!productosRepository.existsById(id)) {
             throw new ResourceNotFoundException("Producto no encontrado con id: " + id);
         }
-
         productosRepository.deleteById(id);
     }
 
-    private void validateId(Long id) {
-        if (id == null || id <= 0) {
-            throw new IllegalArgumentException("El id debe ser un número positivo.");
-        }
+    private void applyRequestToEntity(Productos p, ProductoRequestDto request) {
+        p.setNombre(request.getNombre());
+        p.setImg_url(request.getImg_url());
+        p.setDescripcion(request.getDescripcion());
+        p.setContent(request.getContent());
+        p.setMarca(request.getMarca());
+        p.setCategorias(request.getCategorias());
+
+        // ✅ features: acepta lista o string
+        String featuresRaw = normalizeFeaturesRaw(request);
+        p.setFeatures(featuresRaw);
     }
 
-    private void validateRequest(Productos request) {
-        if (request == null) {
-            throw new IllegalArgumentException("El body no puede ser null.");
+    private String normalizeFeaturesRaw(ProductoRequestDto request) {
+        // Si viene featuresList, tiene prioridad
+        if (request.getFeaturesList() != null) {
+            return encodeFromList(List.of(request.getFeaturesList()));
         }
-        if (isBlank(request.getNombre())) {
-            throw new IllegalArgumentException("El nombre es obligatorio.");
-        }
-        if (isBlank(request.getImg_url())) {
-            throw new IllegalArgumentException("La imagen (img_url) es obligatoria.");
-        }
-        if (isBlank(request.getDescripcion())) {
-            throw new IllegalArgumentException("La descripción es obligatoria.");
-        }
-        if (isBlank(request.getMarca())) {
-            throw new IllegalArgumentException("La marca es obligatoria.");
-        }
-        if (request.getCategorias() == null) {
-            throw new IllegalArgumentException("Las categorías no pueden ser null.");
-        }
+        // Si viene string, normalizamos
+        String raw = request.getFeatures();
+        if (raw == null) return "";
+        return encodeFromList(decodeToList(raw));
+    }
+
+    private ProductoResponseDto toResponse(Productos p) {
+        return ProductoResponseDto.builder()
+                .id(p.getId())
+                .nombre(p.getNombre())
+                .img_url(p.getImg_url())
+                .descripcion(p.getDescripcion())
+                .content(p.getContent())
+                .features(decodeToList(p.getFeatures())) //  lista
+                .marca(p.getMarca())
+                .categorias(p.getCategorias())
+                .build();
+    }
+
+    private void validateRequest(ProductoRequestDto request) {
+        if (request == null) throw new IllegalArgumentException("El body no puede ser null.");
+        if (isBlank(request.getNombre())) throw new IllegalArgumentException("El nombre es obligatorio.");
+        if (isBlank(request.getImg_url())) throw new IllegalArgumentException("La imagen (img_url) es obligatoria.");
+        if (isBlank(request.getDescripcion())) throw new IllegalArgumentException("La descripción es obligatoria.");
+        if (isBlank(request.getContent())) throw new IllegalArgumentException("El content es obligatorio.");
+        if (isBlank(request.getMarca())) throw new IllegalArgumentException("La marca es obligatoria.");
+        if (request.getCategorias() == null) throw new IllegalArgumentException("Las categorías no pueden ser null.");
     }
 
     private boolean isBlank(String s) {
         return s == null || s.trim().isEmpty();
     }
 
-    private String trimToNull(String s) {
-        if (s == null) return null;
-        String t = s.trim();
-        return t.isEmpty() ? null : t;
+    public static List<String> decodeToList(String raw) {
+        if (raw == null || raw.trim().isEmpty()) return new ArrayList<>();
+
+        return Arrays.stream(raw.split(";"))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
+    }
+
+    public static String encodeFromList(List<String> list) {
+        if (list == null || list.isEmpty()) return "";
+        return list.stream()
+                .map(s -> s == null ? "" : s.trim())
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.joining(";"));
     }
 }

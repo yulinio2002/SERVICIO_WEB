@@ -5,7 +5,9 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -13,6 +15,7 @@ import java.util.Set;
 @Table(name = "productos")
 @RequiredArgsConstructor
 public class Productos {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,17 +29,18 @@ public class Productos {
     @Column(nullable = false, length = 1000)
     private String descripcion;
 
+    @Column(nullable = false, length = 5000)
+    private String content;
+
+    @Column(length = 5000)
+    private String features = "";       // La lista de caracteristicas estan separadas por ;
+
     @Column(nullable = false)
     private String marca;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(
-            name = "producto_categoria",
-            joinColumns = @JoinColumn(name = "productos_id")
-    )
+    @CollectionTable(name = "producto_categoria", joinColumns = @JoinColumn(name = "productos_id"))
     @Enumerated(EnumType.STRING)
     @Column(name = "categoria")
     private Set<Categorias> categorias = new HashSet<>();
-
-
 }

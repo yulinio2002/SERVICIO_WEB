@@ -1,7 +1,10 @@
 package com.example.proyecto.domain.service;
 
 import com.example.proyecto.domain.entity.Marcas;
+import com.example.proyecto.domain.entity.Productos;
+import com.example.proyecto.dto.MarcaResponseDto;
 import com.example.proyecto.infrastructure.MarcasRepository;
+import com.example.proyecto.infrastructure.ProductosRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +17,7 @@ import java.util.List;
 public class MarcasService {
 
     private final MarcasRepository marcasRepository;
+    private final ProductosRepository productosRepository;
 
     public Marcas crear(Marcas marca) {
         // Opcional: evitar duplicados por nombre
@@ -23,8 +27,10 @@ public class MarcasService {
         return marcasRepository.save(marca);
     }
 
-    public List<Marcas> listar() {
-        return marcasRepository.findAll();
+    public List<MarcaResponseDto> listar() {
+        return marcasRepository.findAll().stream()
+                .map(this::toResponseWithFallbackImage)
+                .toList();
     }
 
     public Marcas obtenerPorId(Long id) {
@@ -46,5 +52,30 @@ public class MarcasService {
             throw new EntityNotFoundException("Marca no encontrada con ID: " + id);
         }
         marcasRepository.deleteById(id);
+    }
+
+    private MarcaResponseDto toResponseWithFallbackImage(Marcas m) {
+        String imagen = safe(m.getImagenUrl());
+
+        // fallback: primera imagen del primer producto de esa marca
+        if (imagen.isEmpty()) {
+            Productos first = productosRepository
+                    .findFirstByMarcaIgnoreCaseOrderByIdAsc(m.getNombre())
+                    .orElse(null);
+
+            if (first != null && first.getImg_url() != null) {
+                imagen = first.getImg_url().trim();
+            }
+        }
+
+        return MarcaResponseDto.builder()
+                .id(m.getId())
+                .nombre(m.getNombre())
+                .imagenUrl(imagen)
+                .build();
+    }
+
+    private String safe(String s) {
+        return s == null ? "" : s.trim();
     }
 }

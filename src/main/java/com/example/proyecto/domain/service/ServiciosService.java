@@ -1,6 +1,7 @@
 package com.example.proyecto.domain.service;
 
 import com.example.proyecto.domain.entity.Servicios;
+import com.example.proyecto.dto.ServicioDTO;
 import com.example.proyecto.exception.ResourceNotFoundException;
 import com.example.proyecto.infrastructure.ServiciosRepository;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
@@ -18,9 +19,9 @@ public class ServiciosService {
 
     private final ServiciosRepository serviciosRepository;
 
-    public Servicios create(Servicios request) {
+    public ServicioDTO create(Servicios request) {
         validateRequest(request);
-        return serviciosRepository.save(request);
+        return mapToServicioDTO(serviciosRepository.save(request)); // Esto va a fallar después de guardar si no hay fotos asociadas
     }
 
     public Servicios getById(Long id) {
@@ -29,12 +30,13 @@ public class ServiciosService {
                 .orElseThrow(() -> new ResourceNotFoundException("Servicio no encontrado con id: " + id));
     }
 
-    public List<Servicios> getAll() {
-        return serviciosRepository.findAll();
+    public List<ServicioDTO> getAll() {
+        // mapear a DTO
+        return serviciosRepository.findAll().stream().map(this::mapToServicioDTO).toList();
     }
 
-    public List<Servicios> top5ByIdDesc() {
-        return serviciosRepository.findTop5ByOrderByIdDesc();
+    public List<ServicioDTO> top5ByIdDesc() {
+        return serviciosRepository.findTop5ByOrderByIdDesc().stream().map(this::mapToServicioDTO).toList();
     }
 
     public Servicios update(Long id, Servicios request) {
@@ -84,5 +86,13 @@ public class ServiciosService {
 
     private boolean isBlank(String s) {
         return s == null || s.trim().isEmpty();
+    }
+
+    private ServicioDTO mapToServicioDTO(Servicios s){
+        ServicioDTO ns = new ServicioDTO();
+        ns.setId(s.getId());
+        ns.setTitle(s.getNombre());
+        ns.setImage((s.getFotos() == null || s.getFotos().isEmpty()) ? " " : s.getFotos().get(0).getImagenUrl());
+        return ns;
     }
 }

@@ -46,7 +46,6 @@ public class ProyectosService {
                 .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado con id: " + id));
 
         existing.setNombre(request.getNombre());
-        existing.setImg_url(request.getImg_url());
         existing.setDescripcion(request.getDescripcion());
 
         return proyectosRepository.save(existing);
@@ -74,9 +73,6 @@ public class ProyectosService {
         }
         if (isBlank(request.getNombre())) {
             throw new IllegalArgumentException("El nombre es obligatorio.");
-        }
-        if (isBlank(request.getImg_url())) {
-            throw new IllegalArgumentException("La imagen (img_url) es obligatoria.");
         }
         if (isBlank(request.getDescripcion())) {
             throw new IllegalArgumentException("La descripción es obligatoria.");

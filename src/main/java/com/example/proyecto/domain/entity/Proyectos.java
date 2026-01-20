@@ -23,14 +23,11 @@ public class Proyectos {
     @Column(nullable = false)
     private String nombre;
 
-    @Column(nullable = false)
-    private String img_url;
-
     @Column(nullable = false, length = 1000)
     private String descripcion;
 
-    @OneToMany(mappedBy = "proyectos", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "proyecto", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonManagedReference("proyecto-fotos")
-    private List<Fotos> fotos;
+    private Fotos foto;
 
 }

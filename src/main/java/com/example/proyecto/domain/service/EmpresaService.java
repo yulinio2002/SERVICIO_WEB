@@ -1,8 +1,8 @@
 package com.example.proyecto.domain.service;
 
 import com.example.proyecto.domain.entity.Empresa;
+import com.example.proyecto.exception.ResourceNotFoundException;
 import com.example.proyecto.infrastructure.EmpresaRepository;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,7 +28,7 @@ public class EmpresaService {
     // Obtener empresa por ID
     public Empresa obtenerEmpresaPorId(Long id) {
         return empresaRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Empresa no encontrada con ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Empresa no encontrada con ID: " + id));
     }
 
     // Actualizar SOLO los campos editables
@@ -51,7 +51,7 @@ public class EmpresaService {
     // Eliminar empresa
     public void eliminarEmpresa(Long id) {
         if (!empresaRepository.existsById(id)) {
-            throw new EntityNotFoundException("Empresa no encontrada con ID: " + id);
+            throw new ResourceNotFoundException("Empresa no encontrada con ID: " + id);
         }
         empresaRepository.deleteById(id);
     }

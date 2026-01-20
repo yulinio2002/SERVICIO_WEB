@@ -54,7 +54,7 @@ public class FotosController {
         Servicios s = new Servicios();
         s.setId(servicioId);
         request.setServicio(s);
-        request.setProyectos(null);
+        request.setProyecto(null);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(fotosService.create(request));
     }
@@ -63,7 +63,7 @@ public class FotosController {
     public ResponseEntity<Fotos> createForProyecto(@PathVariable Long proyectoId, @RequestBody Fotos request) {
         Proyectos p = new Proyectos();
         p.setId(proyectoId);
-        request.setProyectos(p);
+        request.setProyecto(p);
         request.setServicio(null);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(fotosService.create(request));

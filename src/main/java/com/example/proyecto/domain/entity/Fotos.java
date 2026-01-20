@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.PropertyGenerator.class,
         property = "id"
@@ -22,13 +23,16 @@ public class Fotos {
     @Column(nullable = false)
     private String imagenUrl;
 
+    @Column(nullable = false)
+    private String alt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "servicio_id", nullable = true)
     @JsonBackReference("servicio-fotos")
     private Servicios servicio;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "proyectos_id", nullable = true)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "proyectos_id", nullable = true, unique = true)
     @JsonBackReference("proyecto-fotos")
-    private Proyectos proyectos;
+    private Proyectos proyecto;
 }

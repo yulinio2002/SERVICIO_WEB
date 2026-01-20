@@ -1,4 +1,4 @@
-package com.example.proyecto.config;
+package com.example.proyecto.config.seeders;
 import com.example.proyecto.domain.entity.Fotos;
 import com.example.proyecto.domain.entity.Servicios;
 import com.example.proyecto.infrastructure.FotosRepository;
@@ -90,7 +90,7 @@ public class DefaultServiciosSeeder implements ApplicationRunner {
         f.setImagenUrl(url);
         f.setAlt(alt);
         f.setServicio(servicio);
-        f.setProyectos(null); // por tu regla XOR (solo uno)
+        f.setProyecto(null); // por tu regla XOR (solo uno)
         fotosRepository.save(f);
     }
 }

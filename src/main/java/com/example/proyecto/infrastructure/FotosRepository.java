@@ -9,5 +9,5 @@ import java.util.List;
 public interface FotosRepository extends JpaRepository <Fotos, Long> {
     List<Fotos> findByServicio_IdOrderByIdDesc(Long servicioId);
 
-    List<Fotos> findByProyectos_IdOrderByIdDesc(Long proyectoId);
+    List<Fotos> findByProyecto_IdOrderByIdDesc(Long proyectoId);
 }

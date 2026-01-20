@@ -2,6 +2,7 @@ package com.example.proyecto.controller;
 
 import com.example.proyecto.domain.entity.Servicios;
 import com.example.proyecto.domain.service.ServiciosService;
+import com.example.proyecto.dto.ServicioDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +18,7 @@ public class ServiciosController {
     private final ServiciosService serviciosService;
 
     @PostMapping
-    public ResponseEntity<Servicios> create(@RequestBody Servicios request) {
+    public ResponseEntity<ServicioDTO> create(@RequestBody Servicios request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(serviciosService.create(request));
     }
 
@@ -27,12 +28,12 @@ public class ServiciosController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Servicios>> getAll() {
+    public ResponseEntity<List<ServicioDTO>> getAll() {
         return ResponseEntity.ok(serviciosService.getAll());
     }
 
     @GetMapping("/top/5")
-    public ResponseEntity<List<Servicios>> top5() {
+    public ResponseEntity<List<ServicioDTO>> top5() {
         return ResponseEntity.ok(serviciosService.top5ByIdDesc());
     }
 

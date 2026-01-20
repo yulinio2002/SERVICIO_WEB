@@ -1,4 +1,4 @@
-package com.example.proyecto.config;
+package com.example.proyecto.config.seeders;
 
 import com.example.proyecto.domain.entity.Persona;
 import com.example.proyecto.domain.entity.User;

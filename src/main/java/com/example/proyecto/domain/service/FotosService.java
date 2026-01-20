@@ -24,7 +24,7 @@ public class FotosService {
         validateRequestForCreate(request);
 
         boolean hasServicio = request.getServicio() != null && request.getServicio().getId() != null;
-        boolean hasProyecto = request.getProyectos() != null && request.getProyectos().getId() != null;
+        boolean hasProyecto = request.getProyecto() != null && request.getProyecto().getId() != null;
 
         if (hasServicio == hasProyecto) {
             throw new IllegalArgumentException("La foto debe pertenecer a un Servicio o a un Proyecto (solo uno).");
@@ -38,15 +38,15 @@ public class FotosService {
                     .orElseThrow(() -> new ResourceNotFoundException("Servicio no encontrado con id: " + servicioId));
 
             request.setServicio(servicio);
-            request.setProyectos(null);
+            request.setProyecto(null);
         } else {
-            Long proyectoId = request.getProyectos().getId();
+            Long proyectoId = request.getProyecto().getId();
             validateId(proyectoId);
 
             Proyectos proyecto = proyectosRepository.findById(proyectoId)
                     .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado con id: " + proyectoId));
 
-            request.setProyectos(proyecto);
+            request.setProyecto(proyecto);
             request.setServicio(null);
         }
 
@@ -81,7 +81,7 @@ public class FotosService {
             throw new ResourceNotFoundException("Proyecto no encontrado con id: " + proyectoId);
         }
 
-        return fotosRepository.findByProyectos_IdOrderByIdDesc(proyectoId);
+        return fotosRepository.findByProyecto_IdOrderByIdDesc(proyectoId);
     }
 
     public Fotos update(Long id, Fotos request) {
@@ -94,7 +94,7 @@ public class FotosService {
         existing.setImagenUrl(request.getImagenUrl());
 
         boolean wantsServicio = request.getServicio() != null && request.getServicio().getId() != null;
-        boolean wantsProyecto = request.getProyectos() != null && request.getProyectos().getId() != null;
+        boolean wantsProyecto = request.getProyecto() != null && request.getProyecto().getId() != null;
 
         if (wantsServicio && wantsProyecto) {
             throw new IllegalArgumentException("No puedes asignar Servicio y Proyecto al mismo tiempo.");
@@ -108,15 +108,15 @@ public class FotosService {
                     .orElseThrow(() -> new ResourceNotFoundException("Servicio no encontrado con id: " + servicioId));
 
             existing.setServicio(servicio);
-            existing.setProyectos(null);
+            existing.setProyecto(null);
         } else if (wantsProyecto) {
-            Long proyectoId = request.getProyectos().getId();
+            Long proyectoId = request.getProyecto().getId();
             validateId(proyectoId);
 
             Proyectos proyecto = proyectosRepository.findById(proyectoId)
                     .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado con id: " + proyectoId));
 
-            existing.setProyectos(proyecto);
+            existing.setProyecto(proyecto);
             existing.setServicio(null);
         }
 

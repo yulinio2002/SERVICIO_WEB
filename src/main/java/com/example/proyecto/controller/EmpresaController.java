@@ -52,16 +52,16 @@ public class EmpresaController {
         return ResponseEntity.noContent().build();
     }
 
-    // ===============================
-    // Manejo básico de errores
-    // ===============================
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<String> manejarNotFound(EntityNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-    }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> manejarBadRequest(IllegalArgumentException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-    }
+//    // ===============================
+//    // Manejo básico de errores
+//    // ===============================
+//    @ExceptionHandler(EntityNotFoundException.class)
+//    public ResponseEntity<String> manejarNotFound(EntityNotFoundException ex) {
+//        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+//    }
+//
+//    @ExceptionHandler(IllegalArgumentException.class)
+//    public ResponseEntity<String> manejarBadRequest(IllegalArgumentException ex) {
+//        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+//    }
 }

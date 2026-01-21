@@ -2,7 +2,7 @@ package com.example.proyecto.domain.service;
 
 import com.example.proyecto.domain.entity.Marcas;
 import com.example.proyecto.domain.entity.Productos;
-import com.example.proyecto.dto.MarcaResponseDto;
+import com.example.proyecto.dto.MarcasRequestDto;
 import com.example.proyecto.infrastructure.MarcasRepository;
 import com.example.proyecto.infrastructure.ProductosRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -24,10 +24,11 @@ public class MarcasService {
         if (marcasRepository.existsByNombreIgnoreCase(marca.getNombre())) {
             throw new IllegalArgumentException("Ya existe una marca con el nombre: " + marca.getNombre());
         }
+        marca.setId(null);
         return marcasRepository.save(marca);
     }
 
-    public List<MarcaResponseDto> listar() {
+    public List<Marcas> listar() {
         return marcasRepository.findAll().stream()
                 .map(this::toResponseWithFallbackImage)
                 .toList();
@@ -38,7 +39,7 @@ public class MarcasService {
                 .orElseThrow(() -> new EntityNotFoundException("Marca no encontrada con ID: " + id));
     }
 
-    public Marcas actualizar(Long id, Marcas cambios) {
+    public Marcas actualizar(Long id, MarcasRequestDto cambios) {
         Marcas actual = obtenerPorId(id);
 
         actual.setNombre(cambios.getNombre());
@@ -54,7 +55,7 @@ public class MarcasService {
         marcasRepository.deleteById(id);
     }
 
-    private MarcaResponseDto toResponseWithFallbackImage(Marcas m) {
+    private Marcas toResponseWithFallbackImage(Marcas m) {
         String imagen = safe(m.getImagenUrl());
 
         // fallback: primera imagen del primer producto de esa marca
@@ -67,12 +68,11 @@ public class MarcasService {
                 imagen = first.getImg_url().trim();
             }
         }
-
-        return MarcaResponseDto.builder()
-                .id(m.getId())
-                .nombre(m.getNombre())
-                .imagenUrl(imagen)
-                .build();
+        Marcas marcaConImagen = new Marcas();
+        marcaConImagen.setId(m.getId());
+        marcaConImagen.setNombre(m.getNombre());
+        marcaConImagen.setImagenUrl(imagen);
+        return marcaConImagen;
     }
 
     private String safe(String s) {

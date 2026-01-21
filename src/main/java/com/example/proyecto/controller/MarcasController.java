@@ -2,7 +2,7 @@ package com.example.proyecto.controller;
 
 import com.example.proyecto.domain.entity.Marcas;
 import com.example.proyecto.domain.service.MarcasService;
-import com.example.proyecto.dto.MarcaResponseDto;
+import com.example.proyecto.dto.MarcasRequestDto;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,13 +20,14 @@ public class MarcasController {
     // CREATE
     @PostMapping
     public ResponseEntity<Marcas> crear(@RequestBody Marcas marca) {
+        System.out.println("Creando marca: " + marca.getNombre());
         Marcas creada = marcasService.crear(marca);
         return ResponseEntity.status(HttpStatus.CREATED).body(creada);
     }
 
     // READ ALL
     @GetMapping
-    public ResponseEntity<List<MarcaResponseDto>> listar() {
+    public ResponseEntity<List<Marcas>> listar() {
         return ResponseEntity.ok(marcasService.listar());
     }
 
@@ -38,7 +39,7 @@ public class MarcasController {
 
     // UPDATE
     @PutMapping("/{id}")
-    public ResponseEntity<Marcas> actualizar(@PathVariable Long id, @RequestBody Marcas cambios) {
+    public ResponseEntity<Marcas> actualizar(@PathVariable Long id, @RequestBody MarcasRequestDto cambios) {
         return ResponseEntity.ok(marcasService.actualizar(id, cambios));
     }
 
@@ -49,14 +50,4 @@ public class MarcasController {
         return ResponseEntity.noContent().build();
     }
 
-    // Manejo simple de errores (opcional)
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<String> notFound(EntityNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-    }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> badRequest(IllegalArgumentException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-    }
 }

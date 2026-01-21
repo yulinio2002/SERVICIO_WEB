@@ -9,10 +9,12 @@ import com.example.proyecto.exception.ResourceNotFoundException;
 import com.example.proyecto.infrastructure.ProductosRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,14 +23,20 @@ public class ProductosService {
 
     private final ProductosRepository productosRepository;
 
+    @Transactional
     public ProductoResponseDto create(ProductoRequestDto request) {
+        // Mostrar en consola el dato que llega en request
+        System.out.println("CREATE request: " + request);
         validateRequest(request);
 
-        if (productosRepository.existsByNombreIgnoreCase(request.getNombre())) {
-            throw new ConflictException("Ya existe un producto con el nombre: " + request.getNombre());
+        String nombre = getNombreEffective(request);
+
+        if (productosRepository.existsByNombreIgnoreCase(nombre)) {
+            throw new ConflictException("Ya existe un producto con el nombre: " + nombre);
         }
 
         Productos p = new Productos();
+        p.setId(null); // importante en create
         applyRequestToEntity(p, request);
 
         Productos saved = productosRepository.save(p);
@@ -58,14 +66,17 @@ public class ProductosService {
         return list.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    @Transactional
     public ProductoResponseDto update(Long id, ProductoRequestDto request) {
         validateRequest(request);
 
         Productos existing = productosRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con id: " + id));
 
-        if (productosRepository.existsByNombreIgnoreCaseAndIdNot(request.getNombre(), id)) {
-            throw new ConflictException("Ya existe otro producto con el nombre: " + request.getNombre());
+        String nombre = getNombreEffective(request);
+
+        if (productosRepository.existsByNombreIgnoreCaseAndIdNot(nombre, id)) {
+            throw new ConflictException("Ya existe otro producto con el nombre: " + nombre);
         }
 
         applyRequestToEntity(existing, request);
@@ -81,27 +92,66 @@ public class ProductosService {
     }
 
     private void applyRequestToEntity(Productos p, ProductoRequestDto request) {
-        p.setNombre(request.getNombre());
-        p.setImg_url(request.getImg_url());
-        p.setDescripcion(request.getDescripcion());
-        p.setContent(request.getContent());
-        p.setMarca(request.getMarca());
-        p.setCategorias(request.getCategorias());
+        p.setNombre(getNombreEffective(request));
+        p.setDescripcion(getDescripcionEffective(request));
+        p.setContent(getContentEffective(request));
+        p.setMarca(getMarcaEffective(request));
 
-        // ✅ features: acepta lista o string
+        // Categorías: siempre viene del front, si no viene lanzamos error en validate
+        Set<Categorias> cats = request.getCategorias();
+        p.setCategorias(cats);
+
+        // img_url: puede venir directo o desde images/galleryImages
+        p.setImg_url(getImgUrlEffective(request));
+
+        // features: lista o string
         String featuresRaw = normalizeFeaturesRaw(request);
         p.setFeatures(featuresRaw);
     }
 
+    private String getNombreEffective(ProductoRequestDto request) {
+        if (!isBlank(request.getNombre())) return request.getNombre().trim();
+        if (!isBlank(request.getTitle())) return request.getTitle().trim();
+        return null;
+    }
+
+    private String getDescripcionEffective(ProductoRequestDto request) {
+        if (!isBlank(request.getDescripcion())) return request.getDescripcion().trim();
+        if (!isBlank(request.getDescription())) return request.getDescription().trim();
+        return null;
+    }
+
+    private String getContentEffective(ProductoRequestDto request) {
+        if (!isBlank(request.getContent())) return request.getContent().trim();
+        return null;
+    }
+
+    private String getMarcaEffective(ProductoRequestDto request) {
+        if (!isBlank(request.getMarca())) return request.getMarca().trim();
+        return null;
+    }
+
+    private String getImgUrlEffective(ProductoRequestDto request) {
+        // 1) si viene img_url
+        if (!isBlank(request.getImg_url())) return request.getImg_url().trim();
+
+        return null;
+    }
+
     private String normalizeFeaturesRaw(ProductoRequestDto request) {
-        // Si viene featuresList, tiene prioridad
+        // Prioridad: featuresList (array)
         if (request.getFeaturesList() != null) {
             return encodeFromList(List.of(request.getFeaturesList()));
         }
-        // Si viene string, normalizamos
-        String raw = request.getFeatures();
-        if (raw == null) return "";
-        return encodeFromList(decodeToList(raw));
+
+        // Si viene string features (a;b;c)
+        if (!isBlank(request.getFeatures())) {
+            return encodeFromList(decodeToList(request.getFeatures()));
+        }
+
+        // Si el front manda features como lista pero tú no la modelaste como List<String>,
+        // entonces debe mapear a featuresList. (En front, envía featuresList o features "a;b;c")
+        return "";
     }
 
     private ProductoResponseDto toResponse(Productos p) {
@@ -111,7 +161,7 @@ public class ProductosService {
                 .img_url(p.getImg_url())
                 .descripcion(p.getDescripcion())
                 .content(p.getContent())
-                .features(decodeToList(p.getFeatures())) //  lista
+                .features(decodeToList(p.getFeatures()))
                 .marca(p.getMarca())
                 .categorias(p.getCategorias())
                 .build();
@@ -119,11 +169,18 @@ public class ProductosService {
 
     private void validateRequest(ProductoRequestDto request) {
         if (request == null) throw new IllegalArgumentException("El body no puede ser null.");
-        if (isBlank(request.getNombre())) throw new IllegalArgumentException("El nombre es obligatorio.");
-        if (isBlank(request.getImg_url())) throw new IllegalArgumentException("La imagen (img_url) es obligatoria.");
-        if (isBlank(request.getDescripcion())) throw new IllegalArgumentException("La descripción es obligatoria.");
-        if (isBlank(request.getContent())) throw new IllegalArgumentException("El content es obligatorio.");
-        if (isBlank(request.getMarca())) throw new IllegalArgumentException("La marca es obligatoria.");
+
+        String nombre = getNombreEffective(request);
+        String img = getImgUrlEffective(request);
+        String desc = getDescripcionEffective(request);
+        String content = getContentEffective(request);
+        String marca = getMarcaEffective(request);
+
+        if (isBlank(nombre)) throw new IllegalArgumentException("El nombre/title es obligatorio.");
+        if (isBlank(img)) throw new IllegalArgumentException("La imagen es obligatoria (img_url o images[0] o galleryImages[0].url).");
+        if (isBlank(desc)) throw new IllegalArgumentException("La descripción es obligatoria (descripcion/description).");
+        if (isBlank(content)) throw new IllegalArgumentException("El content es obligatorio.");
+        if (isBlank(marca)) throw new IllegalArgumentException("La marca es obligatoria.");
         if (request.getCategorias() == null) throw new IllegalArgumentException("Las categorías no pueden ser null.");
     }
 

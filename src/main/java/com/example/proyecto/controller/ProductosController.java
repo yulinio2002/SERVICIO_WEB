@@ -20,7 +20,8 @@ public class ProductosController {
 
     @PostMapping
     public ResponseEntity<ProductoResponseDto> create(@RequestBody ProductoRequestDto request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(productosService.create(request));
+        System.out.println("CONTROLLER request body: " + request);
+        return ResponseEntity.status(HttpStatus.CREATED).body( productosService.create(request));
     }
 
     @GetMapping("/{id}")

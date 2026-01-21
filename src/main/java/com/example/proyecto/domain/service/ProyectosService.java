@@ -2,13 +2,16 @@ package com.example.proyecto.domain.service;
 
 import com.example.proyecto.domain.entity.Proyectos;
 import com.example.proyecto.exception.ResourceNotFoundException;
+import com.example.proyecto.infrastructure.FotosRepository;
 import com.example.proyecto.infrastructure.ProyectosRepository;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.PropertyGenerator.class,
         property = "id"
@@ -18,6 +21,7 @@ import java.util.List;
 public class ProyectosService {
 
     private final ProyectosRepository proyectosRepository;
+    private final FotosRepository fotosRepository;
 
     public Proyectos create(Proyectos request) {
         validateRequest(request);
@@ -51,6 +55,12 @@ public class ProyectosService {
         return proyectosRepository.save(existing);
     }
 
+    /**
+     * Evita violación de FK:
+     * Fotos tiene FK (unique) hacia Proyectos en la relación 1-1 (fotos.proyectos_id).
+     * Se borra primero la foto asociada y luego el proyecto.
+     */
+    @Transactional
     public void delete(Long id) {
         validateId(id);
 
@@ -58,6 +68,10 @@ public class ProyectosService {
             throw new ResourceNotFoundException("Proyecto no encontrado con id: " + id);
         }
 
+        // 1) borrar dependiente (si existe)
+        fotosRepository.deleteByProyecto_Id(id);
+
+        // 2) borrar el padre
         proyectosRepository.deleteById(id);
     }
 

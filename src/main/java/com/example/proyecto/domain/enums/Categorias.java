@@ -4,14 +4,6 @@ import java.util.Arrays;
 import java.util.List;
 
 public enum Categorias {
-    LIMPIEZA,
-    PLOMERIA,
-    ELECTRICISTA,
-    CARPINTERIA,
-    PINTURA,
-    JARDINERIA,
-    CUIDADOS,
-    CONSTRUCCION,
     ABRAZADERAS,
     ACCESORIOS_HIDRAULICOS,
     ACUMULADORES_HIDRAULICOS,

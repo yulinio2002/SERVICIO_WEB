@@ -33,7 +33,7 @@ public class Productos {
     private String content;
 
     @Column(length = 5000)
-    private String features = "";       // La lista de caracteristicas estan separadas por ;
+    private String features = "";       // La lista de características, están separadas por ;
 
     @Column(nullable = false)
     private String marca;

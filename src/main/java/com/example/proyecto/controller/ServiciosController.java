@@ -3,6 +3,7 @@ package com.example.proyecto.controller;
 import com.example.proyecto.domain.entity.Servicios;
 import com.example.proyecto.domain.service.ServiciosService;
 import com.example.proyecto.dto.ServicioDTO;
+import com.example.proyecto.dto.ServicioUpdateRequestDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,7 @@ public class ServiciosController {
     private final ServiciosService serviciosService;
 
     @PostMapping
-    public ResponseEntity<ServicioDTO> create(@RequestBody Servicios request) {
+    public ResponseEntity<ServicioDTO> create(@RequestBody ServicioUpdateRequestDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(serviciosService.create(request));
     }
 
@@ -38,7 +39,7 @@ public class ServiciosController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Servicios> update(@PathVariable Long id, @RequestBody Servicios request) {
+    public ResponseEntity<Servicios> update(@PathVariable Long id, @RequestBody ServicioUpdateRequestDTO request) {
         return ResponseEntity.ok(serviciosService.update(id, request));
     }
 

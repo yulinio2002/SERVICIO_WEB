@@ -9,6 +9,7 @@ import com.example.proyecto.infrastructure.ProyectosRepository;
 import com.example.proyecto.infrastructure.ServiciosRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -20,6 +21,13 @@ public class FotosService {
     private final ServiciosRepository serviciosRepository;
     private final ProyectosRepository proyectosRepository;
 
+    /**
+     * Nota:
+     * - Fotos puede pertenecer a Servicio (1-N) o a Proyecto (1-1) pero no a ambos.
+     * - Para Proyecto (1-1) existe unique constraint en fotos.proyectos_id.
+     *   Antes de asignar un proyecto a una foto, se desvincula cualquier otra foto previa de ese proyecto.
+     */
+    @Transactional
     public Fotos create(Fotos request) {
         validateRequestForCreate(request);
 
@@ -46,6 +54,14 @@ public class FotosService {
             Proyectos proyecto = proyectosRepository.findById(proyectoId)
                     .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado con id: " + proyectoId));
 
+            // Evitar violación unique: fotos.proyectos_id debe ser único
+            // Si ya existía una foto ligada a ese proyecto, se desvincula primero.
+            List<Fotos> yaAsignadas = fotosRepository.findByProyecto_IdOrderByIdDesc(proyectoId);
+            for (Fotos f : yaAsignadas) {
+                f.setProyecto(null);
+                fotosRepository.save(f);
+            }
+
             request.setProyecto(proyecto);
             request.setServicio(null);
         }
@@ -65,25 +81,21 @@ public class FotosService {
 
     public List<Fotos> getByServicio(Long servicioId) {
         validateId(servicioId);
-
-        // Validar que exista el servicio (opcional pero recomendado)
-        if (!serviciosRepository.existsById(servicioId)) {
-            throw new ResourceNotFoundException("Servicio no encontrado con id: " + servicioId);
-        }
-
         return fotosRepository.findByServicio_IdOrderByIdDesc(servicioId);
     }
 
     public List<Fotos> getByProyecto(Long proyectoId) {
         validateId(proyectoId);
-
-        if (!proyectosRepository.existsById(proyectoId)) {
-            throw new ResourceNotFoundException("Proyecto no encontrado con id: " + proyectoId);
-        }
-
         return fotosRepository.findByProyecto_IdOrderByIdDesc(proyectoId);
     }
 
+    /**
+     * Reglas:
+     * - Se permite cambiar imagenUrl.
+     * - Se permite (opcionalmente) cambiar la pertenencia a Servicio o Proyecto.
+     * - Si se asigna a Proyecto: se garantiza 1-1 desvinculando otras fotos del mismo proyecto.
+     */
+    @Transactional
     public Fotos update(Long id, Fotos request) {
         validateId(id);
         validateRequestForUpdate(request);
@@ -116,9 +128,19 @@ public class FotosService {
             Proyectos proyecto = proyectosRepository.findById(proyectoId)
                     .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado con id: " + proyectoId));
 
+            // Evitar violación unique: cualquier otra foto con ese proyecto debe quedar desvinculada.
+            List<Fotos> yaAsignadas = fotosRepository.findByProyecto_IdOrderByIdDesc(proyectoId);
+            for (Fotos f : yaAsignadas) {
+                if (f.getId() != null && !f.getId().equals(existing.getId())) {
+                    f.setProyecto(null);
+                    fotosRepository.save(f);
+                }
+            }
+
             existing.setProyecto(proyecto);
             existing.setServicio(null);
         }
+        // Si no manda servicio/proyecto, solo actualiza imagenUrl (mantiene relación actual)
 
         return fotosRepository.save(existing);
     }
@@ -146,6 +168,7 @@ public class FotosService {
         if (isBlank(request.getImagenUrl())) {
             throw new IllegalArgumentException("La imagen (imagenUrl) es obligatoria.");
         }
+        // Servicio/Proyecto se valida en create()
     }
 
     private void validateRequestForUpdate(Fotos request) {
@@ -155,6 +178,7 @@ public class FotosService {
         if (isBlank(request.getImagenUrl())) {
             throw new IllegalArgumentException("La imagen (imagenUrl) es obligatoria.");
         }
+        // Servicio/Proyecto son opcionales en update()
     }
 
     private boolean isBlank(String s) {

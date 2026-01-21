@@ -62,6 +62,7 @@ public class AuthController {
                 p.setTelefono(u.getPersona().getTelefono());
             }
             dto.setPersona(p);
+            dto.setRoles(u.getRoles());
             return dto;
         }).toList();
     }

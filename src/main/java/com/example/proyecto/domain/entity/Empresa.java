@@ -16,13 +16,13 @@ public class Empresa {
     @Column(nullable = false)
     private String nombre;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 15000)
     private String nosotros;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 5000)
     private String mision;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 5000)
     private String vision;
 
     @Column(nullable = false)

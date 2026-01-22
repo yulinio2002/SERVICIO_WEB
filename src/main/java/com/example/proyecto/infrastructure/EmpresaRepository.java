@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface EmpresaRepository extends JpaRepository<Empresa, Long> {
+    // Método derivado para comprobar existencia por nombre (case-insensitive)
+    boolean existsByNombreIgnoreCase(String nombre);
 }

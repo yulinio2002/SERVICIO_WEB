@@ -8,6 +8,7 @@ import com.example.proyecto.exception.ConflictException;
 import com.example.proyecto.exception.ResourceNotFoundException;
 import com.example.proyecto.infrastructure.ProductosRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProductosService {
 
     private final ProductosRepository productosRepository;
@@ -26,7 +28,7 @@ public class ProductosService {
     @Transactional
     public ProductoResponseDto create(ProductoRequestDto request) {
         // Mostrar en consola el dato que llega en request
-        System.out.println("CREATE request: " + request);
+        log.info("CREATE request: {}", request);
         validateRequest(request);
 
         String nombre = getNombreEffective(request);

@@ -29,9 +29,9 @@ public class MarcasService {
     }
 
     public List<Marcas> listar() {
-        return marcasRepository.findAll().stream()
-                .map(this::toResponseWithFallbackImage)
-                .toList();
+        return marcasRepository.findAll();
+//                .stream().map(this::toResponseWithFallbackImage)
+//                .toList();
     }
 
     public Marcas obtenerPorId(Long id) {

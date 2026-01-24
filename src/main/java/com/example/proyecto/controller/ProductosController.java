@@ -5,7 +5,6 @@ import com.example.proyecto.dto.ProductoResponseDto;
 import com.example.proyecto.domain.enums.Categorias;
 import com.example.proyecto.domain.service.ProductosService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,14 +14,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/productos")
 @RequiredArgsConstructor
-@Slf4j
 public class ProductosController {
 
     private final ProductosService productosService;
 
     @PostMapping
     public ResponseEntity<ProductoResponseDto> create(@RequestBody ProductoRequestDto request) {
-        log.info("CONTROLLER request body: {}", request);
+        System.out.println("CONTROLLER request body: " + request);
         return ResponseEntity.status(HttpStatus.CREATED).body( productosService.create(request));
     }
 

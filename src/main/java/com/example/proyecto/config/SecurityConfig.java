@@ -60,12 +60,13 @@ public class SecurityConfig {
                                 "/api/proyectos", "/api/proyectos/*", "/api/proyectos/top/5",
                                 "/api/fotos", "/api/fotos/*",
                                 "/api/fotos/servicios/*",
-                                "/api/fotos/proyectos/*"
+                                "/api/fotos/proyectos/*",
+                                "/api/productosDestacados"
                         ).permitAll()
 
                         // ADMIN (POST/PUT/DELETE)
                         .requestMatchers(HttpMethod.POST,
-                                "/api/empresas", "/api/marcas", "/api/servicios", "/api/productos", "/api/proyectos"
+                                "/api/empresas", "/api/marcas", "/api/servicios", "/api/productos", "/api/proyectos", "/api/productosDestacados"
                         ).hasRole("ADMIN")
 
                         .requestMatchers(HttpMethod.PUT,
@@ -73,7 +74,7 @@ public class SecurityConfig {
                         ).hasRole("ADMIN")
 
                         .requestMatchers(HttpMethod.DELETE,
-                                "/api/empresas/*", "/api/marcas/*", "/api/servicios/*", "/api/productos/*", "/api/proyectos/*", "/api/fotos/*"
+                                "/api/empresas/*", "/api/marcas/*", "/api/servicios/*", "/api/productos/*", "/api/proyectos/*", "/api/fotos/*", "/api/productosDestacados/*"
                         ).hasRole("ADMIN")
 
                         // Crear fotos (ADMIN)

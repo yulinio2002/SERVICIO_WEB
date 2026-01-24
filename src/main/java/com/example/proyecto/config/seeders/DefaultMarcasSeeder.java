@@ -19,9 +19,13 @@ public class DefaultMarcasSeeder implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        seed("Atos", "/images/img2.jpg");
-        seed("OMT", "/images/img1.jpg");
-        seed("Danfoss Eaton", "/images/img3.jpg");
+        seed("Atos", "/brands/b1.png");
+        seed("FTP", "/brands/b2.png");
+        seed("Scanreco", "/brands/b3.png");
+        seed("Oleohidraulics", "/brands/b4.png");
+        seed("Stauff", "/brands/b5.png");
+        seed("Danfoss Eaton", "/brands/b6.png");
+        seed("OMT", "/brands/b7.png");
     }
 
     private void seed(String nombre, String imagenUrl) {

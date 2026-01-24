@@ -64,6 +64,8 @@ public class SecurityConfig {
                                 "/api/productosDestacados"
                         ).permitAll()
 
+                        .requestMatchers("/api/images", "/api/images/**").permitAll()
+
                         // ADMIN (POST/PUT/DELETE)
                         .requestMatchers(HttpMethod.POST,
                                 "/api/empresas", "/api/marcas", "/api/servicios", "/api/productos", "/api/proyectos", "/api/productosDestacados"

@@ -95,7 +95,11 @@ public class ImageController {
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
             // 4. Actualizamos la URL de la imagen en la entidad
-            String fileUrl = ServletUriComponentsBuilder.fromCurrentContextPath().path(filePath.toString()).toUriString();
+            String fileUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .path("/api/images/public/") // Usamos tu endpoint de acceso
+                    .path(directory + "/")
+                    .path(newFileName)
+                    .toUriString();
             foto.setImagenUrl(fileUrl);
             fotosRepository.save(foto); // Actualizamos la BD
 

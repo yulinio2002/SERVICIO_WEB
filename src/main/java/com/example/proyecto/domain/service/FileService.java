@@ -1,14 +1,20 @@
 package com.example.proyecto.domain.service;
 
+import com.example.proyecto.domain.entity.Fotos;
 import com.example.proyecto.infrastructure.FotosRepository;
+import com.example.proyecto.infrastructure.ProyectosRepository;
+import com.example.proyecto.infrastructure.ServiciosRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 @Transactional
 @Service
@@ -16,59 +22,86 @@ import java.nio.file.Paths;
 public class FileService {
 
     private final FotosRepository fotosRepository;
+    private final ServiciosRepository serviciosRepository;
+    private final ProyectosRepository proyectosRepository;
 
     private final String PUBLIC_DIR = "public";
 
-    /**
-     * Borra un archivo físico basado en su URL pública o ruta relativa.
-     * @param fileUrl URL completa o ruta (ej: /api/images/public/servicios/55_foto.jpg)
-     * @return true si se borró, false si no existía.
-     */
-    public boolean deletePhysicalFile(String fileUrl) {
-        try {
-            String prefix = "/api/images/public/";
-            if (!fileUrl.contains(prefix)) return false;
+    public Fotos uploadFoto(MultipartFile file, String directory, String alt, String tipoEntidad, Long entidadId) throws IOException {
+        // 1. Crear entidad preliminar
+        Fotos foto = new Fotos();
+        foto.setAlt(alt);
+        foto.setImagenUrl("");
 
-            // Extraemos la ruta relativa después del prefijo
-            String relativePath = fileUrl.substring(fileUrl.indexOf(prefix) + prefix.length());
-
-            // Construimos la ruta: public/servicios/55_foto.jpg
-            Path filePath = Paths.get(PUBLIC_DIR).resolve(relativePath).normalize();
-
-            return Files.deleteIfExists(filePath);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
+        // 2. Asociar relaciones
+        if ("service".equalsIgnoreCase(tipoEntidad) && entidadId != null) {
+            serviciosRepository.findById(entidadId).ifPresent(foto::setServicio);
+        } else if ("product".equalsIgnoreCase(tipoEntidad) && entidadId != null) {
+            proyectosRepository.findById(entidadId).ifPresent(foto::setProyecto);
         }
+
+        // 3. Guardar para generar ID
+        foto = fotosRepository.save(foto);
+
+        // 4. Preparar nombre y guardar archivo físico
+        String cleanFileName = file.getOriginalFilename().replaceAll("[^a-zA-Z0-9._-]", "_"); // Saneamiento básico
+        String newFileName = foto.getId() + "_" + cleanFileName;
+
+        Path uploadPath = Paths.get(PUBLIC_DIR, directory);
+
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+
+        Path filePath = uploadPath.resolve(newFileName);
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+
+        // 5. Generar URL pública y actualizar BD
+        String fileUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/api/images/public/")
+                .path(directory + "/")
+                .path(newFileName)
+                .toUriString();
+
+        foto.setImagenUrl(fileUrl);
+        return fotosRepository.save(foto);
     }
 
-    /**
-     * Borrar el registro del archivo en la base de datos si existe.
-     *
-     */
-    public boolean deleteFromDatabaseIfExists(String fullPath) {
+    public boolean deleteFotoComplete(String fullPath) throws IOException {
+        boolean dbDeleted = false;
+
+        // 1. Intentar borrar de la BD extrayendo el ID del nombre del archivo
         try {
-            // 1. Extraer el nombre del archivo de la ruta (ej: "55_foto.jpg")
-            // Buscamos la última barra diagonal "/"
+            // Asumimos formato URL: .../directory/ID_nombre.ext
             String fileName = fullPath.substring(fullPath.lastIndexOf("/") + 1);
-
-            // 2. Extraer el ID (la parte antes del primer "_")
-            // Usamos split("_")[0] para obtener el primer segmento
             String idStr = fileName.split("_")[0];
-
-            // 3. Convertir el texto a Long
             Long idFoto = Long.parseLong(idStr);
 
-            // 4. Lógica de eliminación en BD
             if (fotosRepository.existsById(idFoto)) {
                 fotosRepository.deleteById(idFoto);
-                return true;
+                dbDeleted = true;
             }
         } catch (Exception e) {
-            // Captura errores si el formato del nombre no es el esperado o no es un número
-            System.err.println("Error al extraer ID de la ruta: " + e.getMessage());
+            // Si falla el parseo, seguimos intentando borrar el archivo físico
+            System.err.println("No se pudo extraer ID para borrar de BD: " + e.getMessage());
         }
 
-        return false;
+        // 2. Borrar archivo físico
+        boolean fileDeleted = false;
+
+        // Normalizamos para evitar problemas de barras en diferentes SO
+        String prefix = "/api/images/public/";
+        if (!fullPath.contains(prefix)) return false;
+
+        String relativePath = fullPath.substring(fullPath.indexOf(prefix) + prefix.length());
+        // Decodificamos o reemplazamos barras invertidas si vienen de Windows
+        relativePath = relativePath.replace("\\", "/");
+
+        Path filePath = Paths.get(PUBLIC_DIR).resolve(relativePath).normalize();
+
+        fileDeleted = Files.deleteIfExists(filePath);
+
+        return dbDeleted || fileDeleted;
     }
 }

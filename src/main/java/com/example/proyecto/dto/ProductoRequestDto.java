@@ -12,20 +12,20 @@ public class ProductoRequestDto {
 
     // --- Back-end (modelo actual)
     private String nombre;
+    private String marca;
     private String img_url;
     private String descripcion;
     private String content;
 
     // features en back: lista o "a;b;c"
-    private String[] featuresList;
-    private String features; // "a;b;c" opcional
+    private String features;
 
-    private String marca;
+
     private Set<Categorias> categorias;
 
     // --- Front-end (payload tipo servicios)
-    private Long id;
-    private String title;
-    private String description;
+    //    private Long id;
+    //    private String title;
+    //    private String description;
 
 }

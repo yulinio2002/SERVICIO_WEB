@@ -36,7 +36,7 @@ public class FileService {
         // 2. Asociar relaciones
         if ("service".equalsIgnoreCase(tipoEntidad) && entidadId != null) {
             serviciosRepository.findById(entidadId).ifPresent(foto::setServicio);
-        } else if ("product".equalsIgnoreCase(tipoEntidad) && entidadId != null) {
+        } else if ("project".equalsIgnoreCase(tipoEntidad) && entidadId != null) {
             proyectosRepository.findById(entidadId).ifPresent(foto::setProyecto);
         }
 

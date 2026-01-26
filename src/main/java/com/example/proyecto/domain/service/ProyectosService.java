@@ -18,6 +18,7 @@ import java.util.List;
 )
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ProyectosService {
 
     private final ProyectosRepository proyectosRepository;
@@ -60,7 +61,6 @@ public class ProyectosService {
      * Fotos tiene FK (unique) hacia Proyectos en la relación 1-1 (fotos.proyectos_id).
      * Se borra primero la foto asociada y luego el proyecto.
      */
-    @Transactional
     public void delete(Long id) {
         validateId(id);
 

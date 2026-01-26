@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 
 @Transactional
 @Service
@@ -69,39 +70,73 @@ public class FileService {
     }
 
     public boolean deleteFotoComplete(String fullPath) throws IOException {
-        boolean dbDeleted = false;
+        String prefix = "/api/images/public/";
+        if (fullPath == null || !fullPath.contains(prefix)) return false;
 
-        // 1. Intentar borrar de la BD extrayendo el ID del nombre del archivo
-        try {
-            // Asumimos formato URL: .../directory/ID_nombre.ext
-            String fileName = fullPath.substring(fullPath.lastIndexOf("/") + 1);
-            String idStr = fileName.split("_")[0];
-            Long idFoto = Long.parseLong(idStr);
+        // 1) Resolver path físico (ABSOLUTO) desde la URL
+        String relativePath = fullPath.substring(fullPath.indexOf(prefix) + prefix.length())
+                .replace("\\", "/");
 
-            if (fotosRepository.existsById(idFoto)) {
-                fotosRepository.deleteById(idFoto);
-                dbDeleted = true;
+        Path baseDir = Paths.get(PUBLIC_DIR).toAbsolutePath().normalize();
+        Path filePath = baseDir.resolve(relativePath).normalize();
+
+
+        // 2) Borrar archivo físico con reintento (Windows lock típico)
+        boolean fileDeleted = false;
+        IOException last = null;
+
+        for (int i = 0; i < 5; i++) {
+            try {
+                fileDeleted = Files.deleteIfExists(filePath);
+                last = null;
+                break;
+            } catch (IOException e) {
+                last = e;
+                try { Thread.sleep(200); } catch (InterruptedException ignored) {}
             }
-        } catch (Exception e) {
-            // Si falla el parseo, seguimos intentando borrar el archivo físico
-            System.err.println("No se pudo extraer ID para borrar de BD: " + e.getMessage());
+        }
+        if (last != null) throw last;
+
+        // 3) Borrar BD (parseando ID desde el nombre) SOLO si el archivo se borró
+        boolean dbDeleted = false;
+        if (fileDeleted) {
+            try {
+                String fileName = fullPath.substring(fullPath.lastIndexOf("/") + 1);
+                Long idFoto = Long.parseLong(fileName.split("_")[0]);
+
+                if (fotosRepository.existsById(idFoto)) {
+                    fotosRepository.deleteById(idFoto);
+                    dbDeleted = true;
+                }
+            } catch (Exception e) {
+                System.err.println("[DELETE] No se pudo borrar BD por parseo ID: " + e.getMessage());
+            }
         }
 
-        // 2. Borrar archivo físico
-        boolean fileDeleted = false;
+        System.out.println("[DELETE] fileDeleted=" + fileDeleted + ", dbDeleted=" + dbDeleted);
+        return fileDeleted && dbDeleted;
+    }
 
-        // Normalizamos para evitar problemas de barras en diferentes SO
-        String prefix = "/api/images/public/";
-        if (!fullPath.contains(prefix)) return false;
 
-        String relativePath = fullPath.substring(fullPath.indexOf(prefix) + prefix.length());
-        // Decodificamos o reemplazamos barras invertidas si vienen de Windows
-        relativePath = relativePath.replace("\\", "/");
+    public List<Long> uploadGaleria(List<MultipartFile> files, String directory, String tipoEntidad, List<String> alt, Long entidadId) {
+        List<Long> idFotos = new java.util.ArrayList<>();
 
-        Path filePath = Paths.get(PUBLIC_DIR).resolve(relativePath).normalize();
+        if (files == null || files.isEmpty()) return idFotos;
 
-        fileDeleted = Files.deleteIfExists(filePath);
-
-        return dbDeleted || fileDeleted;
+        for (MultipartFile file : files) {
+            if (!file.isEmpty()) {
+                try {
+                    // Reutilizamos tu metodo uploadFoto existente
+                    // El alt text se pasa como lista paralela
+                    String altText = (alt != null && alt.size() > idFotos.size()) ? alt.get(idFotos.size()) : "Galería";
+                    idFotos.add(uploadFoto(file, directory, altText, tipoEntidad, entidadId).getId());
+                } catch (IOException e) {
+                    // Loguear error pero continuar con la siguiente foto
+                    System.err.println("Error subiendo foto de galería: " + file.getOriginalFilename());
+                    e.printStackTrace();
+                }
+            }
+        }
+        return idFotos;
     }
 }

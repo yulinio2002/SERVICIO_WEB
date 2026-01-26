@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-    @Transactional
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.PropertyGenerator.class,
         property = "id"
@@ -28,42 +27,25 @@ public class ServiciosService {
     private final FotosRepository fotosRepository;
 
     @Transactional
-    public ServicioDTO create(ServicioUpdateRequestDTO request) {
+    public Servicios create(ServicioUpdateRequestDTO request) {
         if (request == null) throw new IllegalArgumentException("El body no puede ser null.");
-        if (isBlank(request.getTitle())) throw new IllegalArgumentException("title es obligatorio.");
-        if (isBlank(request.getDescription())) throw new IllegalArgumentException("description es obligatorio.");
+        if (isBlank(request.getNombre())) throw new IllegalArgumentException("title es obligatorio.");
+        if (isBlank(request.getDescripcion())) throw new IllegalArgumentException("description es obligatorio.");
         if (isBlank(request.getContent())) throw new IllegalArgumentException("content es obligatorio.");
         if (request.getFeatures() == null) throw new IllegalArgumentException("features es obligatorio (puede ser lista vacía).");
 
-        // imagenUrl (hero)
-        String hero = null;
-        if (request.getImages() != null && !request.getImages().isEmpty() && !isBlank(request.getImages().get(0))) {
-            hero = request.getImages().get(0);
-        } else if (request.getGalleryImages() != null && !request.getGalleryImages().isEmpty()
-                && !isBlank(request.getGalleryImages().get(0).getUrl())) {
-            hero = request.getGalleryImages().get(0).getUrl();
-        }
-        if (isBlank(hero)) {
-            throw new IllegalArgumentException("images[0] o galleryImages[0].url es obligatorio para imagenUrl.");
-        }
 
         // Mapeo FE -> BE
         Servicios newServicio = new Servicios();
-        newServicio.setId(null); // IMPORTANTE: antes de guardar
-        newServicio.setNombre(request.getTitle());
-        newServicio.setDescripcion(request.getDescription());
+        newServicio.setId(null);
+        newServicio.setNombre(request.getNombre());
+        newServicio.setDescripcion(request.getDescripcion());
         newServicio.setContent(request.getContent());
         newServicio.setFeatures(request.getFeatures());
-        newServicio.setImagenUrl(hero);
 
-        // 1) Guardar primero para obtener ID real
         Servicios saved = serviciosRepository.save(newServicio);
 
-        // 2) Ahora sí sincronizar fotos usando el ID real
-        syncServicePhotosReplaceAll(saved.getId(), request);
-
-        // (Opcional pero útil) si quieres que el DTO refleje el hero sin depender del lazy fotos:
-        return mapToServicioDTO(saved);
+        return saved;
     }
 
     public Servicios getById(Long id) {
@@ -88,8 +70,8 @@ public class ServiciosService {
     public Servicios update(Long id, ServicioUpdateRequestDTO request) {
         if (id == null || id <= 0) throw new IllegalArgumentException("El id debe ser positivo.");
         if (request == null) throw new IllegalArgumentException("El body no puede ser null.");
-        if (isBlank(request.getTitle())) throw new IllegalArgumentException("title es obligatorio.");
-        if (isBlank(request.getDescription())) throw new IllegalArgumentException("description es obligatorio.");
+        if (isBlank(request.getNombre())) throw new IllegalArgumentException("title es obligatorio.");
+        if (isBlank(request.getDescripcion())) throw new IllegalArgumentException("description es obligatorio.");
         if (isBlank(request.getContent())) throw new IllegalArgumentException("content es obligatorio.");
         if (request.getFeatures() == null) throw new IllegalArgumentException("features es obligatorio (puede ser lista vacía).");
 
@@ -97,28 +79,10 @@ public class ServiciosService {
                 .orElseThrow(() -> new ResourceNotFoundException("Servicio no encontrado con id: " + id));
 
         // Mapeo FE -> BE
-        existing.setNombre(request.getTitle());
-        existing.setDescripcion(request.getDescription());
+        existing.setNombre(request.getNombre());
+        existing.setDescripcion(request.getDescripcion());
         existing.setContent(request.getContent());
         existing.setFeatures(request.getFeatures());
-
-        // imagenUrl: tomar de images[0] o galleryImages[0].url si viene
-        String hero = null;
-        if (request.getImages() != null && !request.getImages().isEmpty() && !isBlank(request.getImages().get(0))) {
-            hero = request.getImages().get(0);
-        } else if (request.getGalleryImages() != null && !request.getGalleryImages().isEmpty()
-                && !isBlank(request.getGalleryImages().get(0).getUrl())) {
-            hero = request.getGalleryImages().get(0).getUrl();
-        }
-        if (isBlank(hero)) {
-            // Si tu modelo exige imagenUrl NOT NULL, debes garantizarlo
-            // Puedes mantener el existente si no viene hero:
-            // hero = existing.getImagenUrl();
-            throw new IllegalArgumentException("images[0] o galleryImages[0].url es obligatorio para imagenUrl.");
-        }
-        existing.setImagenUrl(hero);
-
-        syncServicePhotosReplaceAll(existing.getId(), request);
 
         return serviciosRepository.save(existing);
     }
@@ -148,20 +112,6 @@ public class ServiciosService {
         }
     }
 
-    private void validateRequest(Servicios request) {
-        if (request == null) {
-            throw new IllegalArgumentException("El body no puede ser null.");
-        }
-        if (isBlank(request.getNombre())) {
-            throw new IllegalArgumentException("El nombre es obligatorio.");
-        }
-        if (isBlank(request.getImagenUrl())) {
-            throw new IllegalArgumentException("La imagen (imagenUrl) es obligatoria.");
-        }
-        if (isBlank(request.getDescripcion())) {
-            throw new IllegalArgumentException("La descripción es obligatoria.");
-        }
-    }
 
     private boolean isBlank(String s) {
         return s == null || s.trim().isEmpty();
@@ -175,27 +125,4 @@ public class ServiciosService {
         return ns;
     }
 
-
-    private void syncServicePhotosReplaceAll(Long servicioId, ServicioUpdateRequestDTO request) {
-        // galleryImages puede venir null o vacía
-        if (request.getGalleryImages() == null) {
-            return; // si quieres que null signifique "no tocar", deja así
-        }
-
-        // Borrado total de dependientes
-        fotosRepository.deleteByServicio_Id(servicioId);
-
-        // Insertar nuevas
-        for (ServicioUpdateRequestDTO.GalleryImage gi : request.getGalleryImages()) {
-            if (gi == null || isBlank(gi.getUrl())) continue;
-
-            Fotos f = new Fotos();
-            f.setImagenUrl(gi.getUrl());
-            f.setAlt(request.getTitle().toLowerCase());
-            f.setServicio(serviciosRepository.getReferenceById(servicioId)); // evita query extra
-            f.setProyecto(null);
-
-            fotosRepository.save(f);
-        }
-    }
 }

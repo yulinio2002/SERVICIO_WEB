@@ -23,16 +23,13 @@ public class Servicios {
     private String nombre;
 
     @Column(nullable = false)
-    private String imagenUrl;
-
-    @Column(nullable = false)
     private String descripcion;
 
     @Column(nullable = false)
     private String content;
 
-    @Column(nullable = false)
-    private List<String> features;
+    @Column(nullable = false, length = 5000)
+    private String features;
 
     @OneToMany(mappedBy = "servicio", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference("servicio-fotos")

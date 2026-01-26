@@ -66,7 +66,7 @@ public class DefaultServiciosSeeder implements ApplicationRunner {
         servicio.setNombre(title);
         servicio.setDescripcion(description);
         servicio.setContent(content);
-        servicio.setImagenUrl(imageUrl);
+        // Juntamos en un solo string separando por ;
         servicio.setFeatures(List.of(
                 "Cálculos: Potencia mecánica, fuerza, velocidad y exigencias (estáticas y dinámicas)",
                 "Selección del actuador",
@@ -74,7 +74,7 @@ public class DefaultServiciosSeeder implements ApplicationRunner {
                 "Cálculos de disipación de calor",
                 "Diagrama hidráulico y lista de materiales (BOM)",
                 "Documentación técnica"
-        ));
+        ).stream().reduce((a, b) -> a + ";" + b).orElse(""));
 
         servicio = serviciosRepository.save(servicio);
 

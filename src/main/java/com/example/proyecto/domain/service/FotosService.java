@@ -34,9 +34,9 @@ public class FotosService {
         boolean hasServicio = request.getServicio() != null && request.getServicio().getId() != null;
         boolean hasProyecto = request.getProyecto() != null && request.getProyecto().getId() != null;
 
-        if (hasServicio == hasProyecto) {
-            throw new IllegalArgumentException("La foto debe pertenecer a un Servicio o a un Proyecto (solo uno).");
-        }
+//        if (hasServicio == hasProyecto) {
+//            throw new IllegalArgumentException("La foto debe pertenecer a un Servicio o a un Proyecto (solo uno).");
+//        }
 
         if (hasServicio) {
             Long servicioId = request.getServicio().getId();
@@ -47,7 +47,8 @@ public class FotosService {
 
             request.setServicio(servicio);
             request.setProyecto(null);
-        } else {
+        }
+        else if (hasProyecto) {
             Long proyectoId = request.getProyecto().getId();
             validateId(proyectoId);
 
@@ -65,6 +66,7 @@ public class FotosService {
             request.setProyecto(proyecto);
             request.setServicio(null);
         }
+
 
         return fotosRepository.save(request);
     }

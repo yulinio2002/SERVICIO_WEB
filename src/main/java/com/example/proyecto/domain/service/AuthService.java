@@ -4,7 +4,6 @@ import com.example.proyecto.config.*;
 import com.example.proyecto.domain.entity.User;
 import com.example.proyecto.domain.enums.Role;
 import com.example.proyecto.dto.*;
-import com.example.proyecto.email.events.WelcomeEmailEvent;
 import com.example.proyecto.exception.ConflictException;
 import com.example.proyecto.exception.ResourceNotFoundException;
 import com.example.proyecto.exception.UnauthorizedException;

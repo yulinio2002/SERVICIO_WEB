@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class ContactoController {
     private final ApplicationEventPublisher publisher;
     private final EmailService emailService;
+
+
     @PostMapping
     public ResponseEntity<Void> enviar(@RequestBody ContactoRequestDTO request) {
         validate(request);

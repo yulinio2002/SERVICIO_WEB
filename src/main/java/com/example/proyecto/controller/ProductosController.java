@@ -7,10 +7,12 @@ import com.example.proyecto.domain.enums.Categorias;
 import com.example.proyecto.domain.service.ProductosService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -41,7 +43,6 @@ public class ProductosController {
         request.setContent(content);
         request.setFeatures(features);
         request.setCategorias(Set.copyOf(categorias));
-        // System.out.println("CONTROLLER request body: " + request);
 
         // Crear imagen y obtener la URL
         try{
@@ -50,6 +51,7 @@ public class ProductosController {
         } catch (Exception e) {
             throw new RuntimeException("Error al crear la imagen del producto: " + e.getMessage());
         }
+
         return ResponseEntity.status(HttpStatus.CREATED).body( productosService.create(request));
     }
 
@@ -66,9 +68,9 @@ public class ProductosController {
         return ResponseEntity.ok(productosService.list(categoria, marca));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ProductoResponseDto> update(@PathVariable Long id,
-                                                      @RequestParam("file") MultipartFile file,
+                                                      @RequestParam(value = "file", required = false) MultipartFile file,
                                                       @RequestParam("nombre") String nombre,
                                                       @RequestParam("marca") String marca,
                                                       @RequestParam("descripcion") String descripcion,
@@ -82,7 +84,7 @@ public class ProductosController {
         request.setDescripcion(descripcion);
         request.setContent(content);
         if(features != null && !features.isEmpty()) request.setFeatures(features);
-        request.setCategorias(Set.copyOf(categorias));
+        request.setCategorias(new HashSet<>(categorias)); // Esto crea un HashSet mutable
 
 
         if (file != null && !file.isEmpty()) {
@@ -98,6 +100,8 @@ public class ProductosController {
             } catch (Exception e) {
                 throw new RuntimeException("Error al crear la imagen del producto: " + e.getMessage());
             }
+        } else {
+            request.setImg_url(productosService.getById(id).getImg_url());
         }
 
         return ResponseEntity.ok(productosService.update(id, request));

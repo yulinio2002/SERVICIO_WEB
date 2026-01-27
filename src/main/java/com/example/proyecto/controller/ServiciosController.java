@@ -36,7 +36,7 @@ public class ServiciosController {
             @RequestParam("content") String content,
             @RequestParam(value = "features", required = false) String features,
             @RequestParam(value = "alt", required = false) List<String> alt,
-            @RequestPart(value = "files", required = false) List<MultipartFile> files // Las Fotos
+            @RequestPart("files") List<MultipartFile> files // Las Fotos
     ) {
         // Construimos el DTO de request
         ServicioUpdateRequestDTO request = new ServicioUpdateRequestDTO();

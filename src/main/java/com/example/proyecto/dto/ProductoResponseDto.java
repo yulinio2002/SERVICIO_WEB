@@ -12,12 +12,12 @@ import java.util.Set;
 public class ProductoResponseDto {
     private Long id;
     private String nombre;
+    private String marca;
     private String img_url;
     private String descripcion;
     private String content;
 
     private List<String> features; // lista para frontend
 
-    private String marca;
     private Set<Categorias> categorias;
 }

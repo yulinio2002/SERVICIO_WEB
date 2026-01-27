@@ -77,10 +77,6 @@ public class ProductosService {
 
         String nombre = request.getNombre().trim();
 
-        if (productosRepository.existsByNombreIgnoreCaseAndIdNot(nombre, id)) {
-            throw new ConflictException("Ya existe otro producto con el nombre: " + nombre);
-        }
-
         applyRequestToEntity(existing, request);
         Productos saved = productosRepository.save(existing);
         return toResponse(saved);

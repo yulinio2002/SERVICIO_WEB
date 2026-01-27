@@ -1,10 +1,12 @@
 package com.example.proyecto.controller;
 
+import com.example.proyecto.domain.entity.ProductosDestacados;
 import com.example.proyecto.domain.service.FileService;
 import com.example.proyecto.dto.ProductoRequestDto;
 import com.example.proyecto.dto.ProductoResponseDto;
 import com.example.proyecto.domain.enums.Categorias;
 import com.example.proyecto.domain.service.ProductosService;
+import com.example.proyecto.infrastructure.ProductosDestacadosRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -14,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @RestController
@@ -23,6 +26,7 @@ public class ProductosController {
 
     private final ProductosService productosService;
     private final FileService fileService;
+    private final ProductosDestacadosRepository destacadosRepository;
 
     /*
      * Es necesario usar @RequestParam para recibir tanto el archivo como los demás campos del producto.
@@ -117,6 +121,14 @@ public class ProductosController {
         } catch (Exception e) {
             throw new RuntimeException("Error al eliminar la imagen del producto: " + e.getMessage());
         }
+        // Eliminar el producto destacado si existe
+        Optional<ProductosDestacados> productoOpt = destacadosRepository.findByIdProducto(id);
+
+        if (!productoOpt.isEmpty()) {
+            destacadosRepository.delete(productoOpt.get());
+        }
+
+
         productosService.delete(id);
         return ResponseEntity.noContent().build();
     }

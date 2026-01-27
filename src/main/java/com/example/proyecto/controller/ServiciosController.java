@@ -36,7 +36,7 @@ public class ServiciosController {
             @RequestParam("content") String content,
             @RequestParam(value = "features", required = false) String features,
             @RequestParam(value = "alt", required = false) List<String> alt,
-            @RequestPart("files") List<MultipartFile> files // Las Fotos
+            @RequestParam("files") List<MultipartFile> files // Las Fotos
     ) {
         // Construimos el DTO de request
         ServicioUpdateRequestDTO request = new ServicioUpdateRequestDTO();
@@ -46,7 +46,9 @@ public class ServiciosController {
         request.setFeatures(features);
 
         // 1. Guardamos el servicio primero (Texto)
-        Servicios nuevoServicio = serviciosService.create(request);
+        try {
+            Servicios nuevoServicio = serviciosService.create(request);
+
 
         // 2. Si vienen archivos, los guardamos asociados al ID del servicio creado
         List<Long> idFotosExistentes = new ArrayList<>();
@@ -67,6 +69,9 @@ public class ServiciosController {
         servicioDTO.setImage(fotosService.getById(idFotoPrincipal).getImagenUrl());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(servicioDTO);
+    } catch (Exception e) {
+        throw new IllegalArgumentException("Error al crear el servicio: " + e.getMessage());
+    }
     }
 
     @GetMapping("/{id}")
@@ -87,9 +92,9 @@ public class ServiciosController {
     @PutMapping(value = "/{id}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ServiciosResponseDTO> update(
             @PathVariable Long id,
-            @RequestPart("data") String data,
-            @RequestParam(value = "alt", required = false) List<String> alt,
-            @RequestPart(value = "files", required = false) List<MultipartFile> files // Las Fotos nuevas
+            @RequestParam("data") String data,                           // es obligatorio
+            @RequestParam(value = "alt", required = false) List<String> alt, // Debe conincidir con las nuevas fotos
+            @RequestParam(value = "files", required = false) List<MultipartFile> files // Las fotos nuevas son opcionales
             ) {
 
         ServicioUpdateRequestDTO request;
@@ -119,7 +124,7 @@ public class ServiciosController {
         });
 
         // Agregar las fotos nuevas si existen usando como alt el listado recibido
-        if (files != null && !files.isEmpty()) {
+        if (files != null && !files.isEmpty() && files.size() != 0) {
             fileService.uploadGaleria(files, "services","service", alt, servicioUpdate.getId());
         }
         ServiciosResponseDTO responseDTO = new ServiciosResponseDTO().mapServiciosToDTO(serviciosService.getById(id));

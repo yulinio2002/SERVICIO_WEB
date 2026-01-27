@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 
 @Transactional
@@ -28,17 +29,31 @@ public class FileService {
 
     private final String PUBLIC_DIR = "public";
 
-    public Fotos uploadFoto(MultipartFile file, String directory, String alt, String tipoEntidad, Long entidadId) throws IOException {
+    public Fotos uploadFoto(MultipartFile file,
+                            String directory,
+                            String alt,
+                            String tipoEntidad,
+                            Long entidadId) throws IOException {
         // 1. Crear entidad preliminar
         Fotos foto = new Fotos();
         foto.setAlt(alt);
         foto.setImagenUrl("");
 
-        // 2. Asociar relaciones
+        // 2. Asociar relaciones - IMPORTANTE: cargar la entidad completa
         if ("service".equalsIgnoreCase(tipoEntidad) && entidadId != null) {
-            serviciosRepository.findById(entidadId).ifPresent(foto::setServicio);
+            Fotos finalFoto1 = foto;
+            serviciosRepository.findById(entidadId).ifPresent(servicio -> {
+                finalFoto1.setServicio(servicio);
+                // IMPORTANTE: Actualizar la relación bidireccional
+                servicio.getFotos().add(finalFoto1);
+            });
         } else if ("project".equalsIgnoreCase(tipoEntidad) && entidadId != null) {
-            proyectosRepository.findById(entidadId).ifPresent(foto::setProyecto);
+            Fotos finalFoto = foto;
+            proyectosRepository.findById(entidadId).ifPresent(proyecto -> {
+                finalFoto.setProyecto(proyecto);
+                // IMPORTANTE: Actualizar la relación bidireccional
+                proyecto.setFoto(finalFoto);
+            });
         }
 
         // 3. Guardar para generar ID
@@ -118,25 +133,37 @@ public class FileService {
     }
 
 
-    public List<Long> uploadGaleria(List<MultipartFile> files, String directory, String tipoEntidad, List<String> alt, Long entidadId) {
-        List<Long> idFotos = new java.util.ArrayList<>();
+    public List<Long> uploadGaleria(List<MultipartFile> files,
+                                    String directory,
+                                    String tipoEntidad,
+                                    List<String> alt,
+                                    Long entidadId) {
+        List<Long> idFotos = new ArrayList<>();
 
         if (files == null || files.isEmpty()) return idFotos;
 
-        for (MultipartFile file : files) {
+        System.out.println("DEBUG: Número de archivos: " + files.size());
+        System.out.println("DEBUG: Lista alt recibida: " + (alt != null ? alt : "null"));
+
+        for (int i = 0; i < files.size(); i++) {
+            MultipartFile file = files.get(i);
             if (!file.isEmpty()) {
                 try {
-                    // Reutilizamos tu metodo uploadFoto existente
-                    // El alt text se pasa como lista paralela
-                    String altText = (alt != null && alt.size() > idFotos.size()) ? alt.get(idFotos.size()) : "Galería";
-                    idFotos.add(uploadFoto(file, directory, altText, tipoEntidad, entidadId).getId());
+                    // Usar índice 'i' en lugar de idFotos.size()
+                    String altText = (alt != null && i < alt.size()) ? alt.get(i) : "Galería";
+                    System.out.println("DEBUG: Procesando archivo " + i + " con alt: " + altText);
+
+                    Fotos fotoGuardada = uploadFoto(file, directory, altText, tipoEntidad, entidadId);
+                    idFotos.add(fotoGuardada.getId());
+                    System.out.println("DEBUG: Foto guardada con ID: " + fotoGuardada.getId());
                 } catch (IOException e) {
-                    // Loguear error pero continuar con la siguiente foto
                     System.err.println("Error subiendo foto de galería: " + file.getOriginalFilename());
                     e.printStackTrace();
                 }
             }
         }
+
+        System.out.println("DEBUG: IDs de fotos guardadas: " + idFotos);
         return idFotos;
     }
 }

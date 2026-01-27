@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.PropertyGenerator.class,
@@ -23,16 +24,16 @@ public class Servicios {
     private String nombre;
 
     @Column(nullable = false)
-    private String descripcion;
+    private String descripcion = "";
 
     @Column(nullable = false)
-    private String content;
+    private String content = "";
 
     @Column(nullable = false, length = 5000)
-    private String features;
+    private String features = "";
 
     @OneToMany(mappedBy = "servicio", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference("servicio-fotos")
-    private List<Fotos> fotos;
+    private List<Fotos> fotos = new ArrayList<>();
 
 }

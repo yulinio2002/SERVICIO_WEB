@@ -119,7 +119,15 @@ public class FileService {
                 String fileName = fullPath.substring(fullPath.lastIndexOf("/") + 1);
                 Long idFoto = Long.parseLong(fileName.split("_")[0]);
 
+                System.out.println("[DELETE] Parsed idFoto=" + idFoto);
+
                 if (fotosRepository.existsById(idFoto)) {
+                    Fotos foto = fotosRepository.findById(idFoto).get();
+                    // Desasociar relaciones para evitar violación de FK
+                    if (foto.getProyecto() != null) {
+                        foto.getProyecto().setFoto(null);
+                    }
+
                     fotosRepository.deleteById(idFoto);
                     dbDeleted = true;
                 }

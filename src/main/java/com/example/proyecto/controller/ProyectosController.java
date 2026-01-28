@@ -5,6 +5,7 @@ import com.example.proyecto.domain.entity.Proyectos;
 import com.example.proyecto.domain.enums.Categorias;
 import com.example.proyecto.domain.service.FileService;
 import com.example.proyecto.domain.service.ProyectosService;
+import com.example.proyecto.dto.ProyectoResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +30,7 @@ public class ProyectosController {
     3. Se retorna el proyecto creado con la imagen asociada
      */
     @PostMapping
-    public ResponseEntity<Proyectos> create(@RequestParam("file") MultipartFile file,
+    public ResponseEntity<ProyectoResponseDTO> create(@RequestParam("file") MultipartFile file,
                                             @RequestParam("nombre") String nombre,
                                             @RequestParam("descripcion") String descripcion) {
         Proyectos request = new Proyectos();
@@ -37,17 +38,37 @@ public class ProyectosController {
         request.setDescripcion(descripcion);
 
         // Creamos la imagen y la asociamos al proyecto
+        // Si la imagen está vacia, retornamos error IllegalArgumentException
+        if (file == null || file.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
         try{
-            var foto = fileService.uploadFoto(file, "projects", nombre, "project", null);
-            request.setFoto(foto);
+            // Guardamos el proyecto primero para obtener su ID
+            Proyectos proyectoCreado = proyectosService.create(request);
+
+            var foto = fileService.uploadFoto(file, "projects", nombre, "project", proyectoCreado.getId());
+            //request.setFoto(foto);
+            // Mapear el proyecto con la foto asociada
+            ProyectoResponseDTO proyectoResponseDTO = new ProyectoResponseDTO();
+            proyectoResponseDTO.setId(proyectoCreado.getId());
+            proyectoResponseDTO.setDescripcion((proyectoCreado.getDescripcion()));
+            proyectoResponseDTO.setNombre(proyectoCreado.getNombre());
+            proyectoResponseDTO.setFoto(new ProyectoResponseDTO.Image(
+                    foto.getId(),
+                    foto.getImagenUrl(),
+                    foto.getAlt()
+            ));
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(proyectoResponseDTO);
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body(proyectosService.create(request));
+
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Proyectos> getById(@PathVariable Long id) {
+    public ResponseEntity<ProyectoResponseDTO> getById(@PathVariable Long id) {
         return ResponseEntity.ok(proyectosService.getById(id));
     }
 
@@ -74,7 +95,7 @@ public class ProyectosController {
         if (file != null && !file.isEmpty()) {
             try {
                 // Primero eliminar la imagen anterior
-                String existingImgUrl = proyectosService.getById(id).getFoto().getImagenUrl();
+                String existingImgUrl = proyectosService.getById(id).getFoto().getUrl();
                 fileService.deleteFotoComplete(existingImgUrl);
 
                 // Luego crear la nueva imagen
@@ -90,9 +111,9 @@ public class ProyectosController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         // Eliminar proyecto y su imagen asociada
-        Fotos foto = proyectosService.getById(id).getFoto();
+        String fotoUrl = proyectosService.getById(id).getFoto().getUrl();
         try {
-            fileService.deleteFotoComplete(foto.getImagenUrl());
+            fileService.deleteFotoComplete(fotoUrl);
         } catch (Exception e) {
             throw new RuntimeException("Error al eliminar la imagen del proyecto: " + e.getMessage());
         }

@@ -1,6 +1,7 @@
 package com.example.proyecto.domain.service;
 
 import com.example.proyecto.domain.entity.Proyectos;
+import com.example.proyecto.dto.ProyectoResponseDTO;
 import com.example.proyecto.exception.ResourceNotFoundException;
 import com.example.proyecto.infrastructure.FotosRepository;
 import com.example.proyecto.infrastructure.ProyectosRepository;
@@ -29,10 +30,12 @@ public class ProyectosService {
         return proyectosRepository.save(request);
     }
 
-    public Proyectos getById(Long id) {
+    public ProyectoResponseDTO getById(Long id) {
         validateId(id);
-        return proyectosRepository.findById(id)
+        Proyectos proyecto = proyectosRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado con id: " + id));
+        // Mapear a DTO
+        return mapProyectoToDTO(proyecto);
     }
 
     public List<Proyectos> getAll() {
@@ -95,5 +98,20 @@ public class ProyectosService {
 
     private boolean isBlank(String s) {
         return s == null || s.trim().isEmpty();
+    }
+
+    private ProyectoResponseDTO mapProyectoToDTO(Proyectos proyecto) {
+        ProyectoResponseDTO dto = new ProyectoResponseDTO();
+        dto.setId(proyecto.getId());
+        dto.setNombre(proyecto.getNombre());
+        dto.setDescripcion(proyecto.getDescripcion());
+        if (proyecto.getFoto() != null) {
+            ProyectoResponseDTO.Image img = new ProyectoResponseDTO.Image(
+                    proyecto.getFoto().getId(),
+                    proyecto.getFoto().getImagenUrl(),
+                    proyecto.getFoto().getAlt());
+            dto.setFoto(img);
+        }
+        return dto;
     }
 }
